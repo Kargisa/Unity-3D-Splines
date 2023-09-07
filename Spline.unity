@@ -328,7 +328,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 821899420}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0, z: 1}
+  m_LocalPosition: {x: -1, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -457,14 +457,24 @@ MonoBehaviour:
   path:
     points:
     - {x: -1, y: 0, z: 0}
-    - {x: -0.5, y: 0.5, z: 0}
-    - {x: 0.5, y: -0.5, z: 0}
+    - {x: -0.5, y: 0.49999997, z: 0}
+    - {x: 0.060735635, y: 0.83292973, z: 0}
+    - {x: -0.07816888, y: 0.17840683, z: 0}
+    - {x: -0.21707338, y: -0.47611606, z: 0}
+    - {x: 0.5, y: -0.49999997, z: 0}
     - {x: 1, y: 0, z: 0}
+    - {x: 1.5, y: 0.49999997, z: 0}
+    - {x: 2.0255313, y: -0.39869553, z: 0}
+    - {x: 1.2630796, y: -0.4994625, z: 0}
+    - {x: 0.500628, y: -0.60022944, z: 0}
+    - {x: -1.5, y: -0.49999997, z: 0}
     rotations:
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
     is2D: 1
-    isClosed: 0
+    isClosed: 1
     checkpoints:
     - foldOut: 0
       points:

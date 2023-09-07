@@ -188,9 +188,9 @@ public class Path
         isClosed = !isClosed;
     }
 
-    private int LoopIndex(int i) => (i + points.Count) % points.Count;
+    private int LoopIndex(int i) => IndexHelper.LoopIndex(i, points.Count);
 
-    private int LoopRotationIndex(int i) => (i + rotations.Count) % rotations.Count;
+    private int LoopRotationIndex(int i) => IndexHelper.LoopIndex(i, rotations.Count);
 
     public void MovePoint(int i, Vector3 pos)
     {
