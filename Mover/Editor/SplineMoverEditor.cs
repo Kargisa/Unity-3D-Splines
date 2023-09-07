@@ -39,15 +39,25 @@ public class SplineMoverEditor : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Path", EditorStyles.boldLabel);
-        PaintSlider(ref _controller.progess, 0, _spline.path.NumSegments, "Progress");
+        PaintProgress(ref _controller.progess, _spline.path.NumSegments, "Progress");
         PathButton();
-
+         
     }
 
-    private void PaintSlider(ref float value, float min, float max, string label)
+    private void PaintProgress(ref float value, float max, string label)
     {
         float prevValue = value;
-        value = EditorGUILayout.Slider(label, value, min, max);
+        if (_path.IsClosed)
+        {
+            value = IndexHelper.LoopIndex(value, max);
+            prevValue = value;
+            value = EditorGUILayout.FloatField(label, value);
+        }
+        else
+        {
+            value = EditorGUILayout.Slider(label, value, 0, max);
+        }
+
         if (prevValue != value)
             _controller.MoveTransformOnSpline(value);
     }
