@@ -181,9 +181,10 @@ public class SplineEditor : Editor
         spline.custom.arrowColor = EditorGUILayout.ColorField("Arrow Color", spline.custom.arrowColor);
 
         spline.custom.arrowLength = EditorGUILayout.Slider("Arrow Length", spline.custom.arrowLength, 0, 1f);
-        spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", spline.custom.arrowDistribution, 1, 100);
-
+        spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", spline.custom.arrowDistribution, 1, 250);
         EditorGUI.indentLevel--;
+
+        SceneView.RepaintAll();
     }
 
     private void Info(ref bool infoFoldOut)

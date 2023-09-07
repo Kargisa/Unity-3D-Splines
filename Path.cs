@@ -121,6 +121,8 @@ public class Path
         points.Insert(index, pos);
         points.Insert(index, pos);
         points.Insert(index, pos);
+
+        rotations.Insert(i, Quaternion.identity);
     }
 
     public void DeletePoint(int i)
