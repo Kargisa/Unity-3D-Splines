@@ -74,7 +74,7 @@ public class SplineMover : MonoBehaviour
         if (nextSegment == progess)
             return;
         
-        time = Mathf.Abs(time);
+        time = time < 0 ? 0 : time;
 
         _moveTime = time / Mathf.Abs(progess - nextSegment);
         _moveTransform = true;
@@ -92,7 +92,7 @@ public class SplineMover : MonoBehaviour
         if (segment == progess)
             return;
 
-        time = Mathf.Abs(time);
+        time = time < 0 ? 0 : time;
 
         _moveTime = time / Mathf.Abs(progess - segment);
         _moveTransform = true;
@@ -109,8 +109,8 @@ public class SplineMover : MonoBehaviour
         t = Mathf.Clamp(t, 0, splineController.path.NumSegments);
         if (t == progess)
             return;
-        
-        time = Mathf.Abs(time);
+
+        time = time < 0 ? 0 : time;
 
         _moveTime = time / Mathf.Abs(progess - t);
         _moveTransform = true;
