@@ -254,6 +254,7 @@ public class SplineEditor : Editor
     private void Input()
     {
         Event guiEvent = Event.current;
+
         Ray r = HandleUtility.GUIPointToWorldRay(guiEvent.mousePosition);
         Vector3 mousPos = r.origin;
 
@@ -265,7 +266,7 @@ public class SplineEditor : Editor
             for (int i = 0; i < path.NumSegments; i++)
             {
                 Vector3[] loaclPoints = path.GetPointsInSegment(i);
-                Vector3[] points = new Vector3[4]; 
+                Vector3[] points = new Vector3[4];
                 for (int j = 0; j < points.Length; j++)
                 {
                     points[j] = spline.transform.TransformPoint(loaclPoints[j]);
