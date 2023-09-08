@@ -24,7 +24,7 @@ public class SplineMover : MonoBehaviour
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
-            MoveToProgress(splineController.path.NumSegments, 10);
+            MoveToNextSegment(2);
 
         if (_moveTransform)
         {
@@ -76,7 +76,7 @@ public class SplineMover : MonoBehaviour
         
         time = Mathf.Abs(time);
 
-        _moveTime = time;
+        _moveTime = time / Mathf.Abs(progess - nextSegment);
         _moveTransform = true;
         _progressToMoveTo = nextSegment;
     }
