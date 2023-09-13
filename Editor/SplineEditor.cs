@@ -42,9 +42,21 @@ public class SplineEditor : Editor
         DeleteCheckpoint();
         EditorGUILayout.Space();
         DrawSplineCustomizer();
+        DrawUpdateBezierDistButton();   // temporary implementation
         EditorGUILayout.Space();
         Info(ref spline.infoFoldOut);
 
+    }
+    // temporary implementation
+    private void DrawUpdateBezierDistButton()
+    {
+        EditorGUILayout.LabelField("Temporare");
+        GUI.enabled = spline.custom.arrowDistributionByDistance;
+        if (GUILayout.Button("Recalculate Bezier Distances"))
+        {
+
+        }
+        GUI.enabled = true;
     }
 
     private void ChangeTo2D()
@@ -180,8 +192,11 @@ public class SplineEditor : Editor
 
         spline.custom.arrowColor = EditorGUILayout.ColorField("Arrow Color", spline.custom.arrowColor);
 
+        EditorGUILayout.Space();
+
+        spline.custom.arrowDistributionByDistance = EditorGUILayout.Toggle("Arrow Distribution By Distance", spline.custom.arrowDistributionByDistance);
         spline.custom.arrowLength = EditorGUILayout.Slider("Arrow Length", spline.custom.arrowLength, 0, 1f);
-        spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", spline.custom.arrowDistribution, 1, 250);
+        spline.custom.arrowDistribution = EditorGUILayout.IntSlider(spline.custom.arrowDistributionByDistance ? "Distance Between Arrows" : "Arrow Distribution", spline.custom.arrowDistribution, 1, 250);
         EditorGUI.indentLevel--;
 
         SceneView.RepaintAll();
