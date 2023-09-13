@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SplineController : MonoBehaviour
@@ -25,7 +23,7 @@ public class SplineController : MonoBehaviour
     public Path path;
 
     /// <summary>
-    /// Creates an new path at <c>this.transform.position</c> in local space
+    /// Creates an new path at <c>SplineController.transform.position</c> in local space
     /// </summary>
     public void CreatePath()
     {
@@ -39,7 +37,7 @@ public class SplineController : MonoBehaviour
     /// <returns>Position on the spline [local space]</returns>
     public Vector3 CalculatePosition(float t)
     {
-        int numSegments = path.NumSegments;
+         int numSegments = path.NumSegments;
         t = Mathf.Clamp(t, 0, numSegments);
         int currentSegment = Mathf.FloorToInt(t) + (t == numSegments ? -1 : 0);
         float segmentT = t - currentSegment;
@@ -80,9 +78,5 @@ public class SplineController : MonoBehaviour
     /// <returns>Rotation on the spline [world space]</returns>
     public Quaternion CalculateRotationWorld(float t) => transform.rotation * CalculateRotation(t);
 
-    public override string ToString()
-    {
-        return $"path: {path}";
-    }
-
+    public override string ToString() => $"path: {path}";
 }
