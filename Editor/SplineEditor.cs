@@ -42,9 +42,21 @@ public class SplineEditor : Editor
         DeleteCheckpoint();
         EditorGUILayout.Space();
         DrawSplineCustomizer();
+        DrawUpdateBezierDistButton();   // temporary implementation
         EditorGUILayout.Space();
         Info(ref spline.infoFoldOut);
 
+    }
+    // temporary implementation
+    private void DrawUpdateBezierDistButton()
+    {
+        EditorGUILayout.LabelField("Temporare");
+        GUI.enabled = spline.custom.arrowDistributionByDistance;
+        if (GUILayout.Button("Recalculate Bezier Distances"))
+        {
+            path.RecalculateDistancesT(spline.custom.arrowDistance, spline.custom.arrowResolution);
+        }
+        GUI.enabled = true;
     }
 
     private void ChangeTo2D()
@@ -180,8 +192,21 @@ public class SplineEditor : Editor
 
         spline.custom.arrowColor = EditorGUILayout.ColorField("Arrow Color", spline.custom.arrowColor);
 
+        EditorGUILayout.Space();
+
+        spline.custom.arrowDistributionByDistance = EditorGUILayout.Toggle("Arrow Distribution By Distance", spline.custom.arrowDistributionByDistance);
+        bool isDist = spline.custom.arrowDistributionByDistance;
+
         spline.custom.arrowLength = EditorGUILayout.Slider("Arrow Length", spline.custom.arrowLength, 0, 1f);
-        spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", spline.custom.arrowDistribution, 1, 250);
+        if (isDist)
+        {
+            spline.custom.arrowResolution = EditorGUILayout.IntSlider("Resolution", spline.custom.arrowResolution, 1, 10000);
+            spline.custom.arrowDistance = EditorGUILayout.Slider("Distance", spline.custom.arrowDistance, 0f, 1f);
+        }
+        else
+        {
+            spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", spline.custom.arrowDistribution, 1, 250);
+        }
         EditorGUI.indentLevel--;
 
         SceneView.RepaintAll();
@@ -387,15 +412,32 @@ public class SplineEditor : Editor
             path.RotatePoint(i, newQuat);
         }
 
-        float arrowsDistr = spline.custom.arrowDistribution;
+        float arrowsDistribution = spline.custom.arrowDistribution;
         Handles.color = spline.custom.arrowColor;
-        for (int j = 0; j < path.NumSegments; j++)
+
+        if (spline.custom.arrowDistributionByDistance)
         {
-            for (int i = 0; i <= arrowsDistr; i++)
+            for (int i = 0; i < path.NumDistancesT; i++)
             {
-                Quaternion rot = spline.CalculateRotation(j + i / arrowsDistr);
-                Vector3 pos = spline.CalculatePosition(j + i / arrowsDistr);
-                Handles.ArrowHandleCap(i, pos, rot, spline.custom.arrowLength, EventType.Repaint);
+                float[] distancesT = path.GetDistancesT(i);
+                for (int j = 0; j < distancesT.Length; j++)
+                {
+                    Quaternion rot = spline.CalculateRotation(i + distancesT[j]);
+                    Vector3 pos = spline.CalculatePosition(i + distancesT[j]);
+                    Handles.ArrowHandleCap(i, pos, rot, spline.custom.arrowLength, EventType.Repaint);
+                }
+            }
+        }
+        else
+        {
+            for (int j = 0; j < path.NumSegments; j++)
+            {
+                for (int i = 0; i < arrowsDistribution; i++)
+                {
+                    Quaternion rot = spline.CalculateRotation(j + i / arrowsDistribution);
+                    Vector3 pos = spline.CalculatePosition(j + i / arrowsDistribution);
+                    Handles.ArrowHandleCap(i, pos, rot, spline.custom.arrowLength, EventType.Repaint);
+                }
             }
         }
     }

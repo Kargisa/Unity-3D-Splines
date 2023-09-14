@@ -393,7 +393,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   showPath: 1
   transToMove: {fileID: 821899423}
-  splineController: {fileID: 1455397897}
+  splineController: {fileID: 0}
   progess: 0
 --- !u!1 &1455397895
 GameObject:
@@ -441,9 +441,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathFoldOut: 0
   rotationsFoldOut: 0
-  infoFoldOut: 1
-  checkpointsFoldOut: 1
-  isRotate: 0
+  infoFoldOut: 0
+  checkpointsFoldOut: 0
+  isRotate: 1
   custom:
     splineColor: {r: 0, g: 1, b: 0, a: 1}
     selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
@@ -452,28 +452,23 @@ MonoBehaviour:
     controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     arrowColor: {r: 0, g: 0, b: 0, a: 1}
     arrowLength: 0.1
+    arrowDistributionByDistance: 1
     arrowDistribution: 40
+    arrowResolution: 5000
+    arrowDistance: 0.05
   customizerFoldOut: 1
   path:
     points:
-    - {x: -0.98561716, y: -0.006597519, z: 0}
-    - {x: -0.8861902, y: 0.34693313, z: 0}
-    - {x: 0.055369228, y: 0.7594538, z: 0}
-    - {x: -0.063081846, y: 0.31101584, z: 0}
-    - {x: -0.18153292, y: -0.13742208, z: 0}
-    - {x: 0.50351083, y: -0.3821901, z: 0}
-    - {x: 0.98940563, y: 0.09843087, z: 0}
-    - {x: 1.4753004, y: 0.57905185, z: 0}
-    - {x: 2.0255313, y: -0.39869553, z: 0}
-    - {x: 1.2630796, y: -0.4994625, z: 0}
-    - {x: 0.500628, y: -0.60022944, z: 0}
-    - {x: 0.037382066, y: -0.25793326, z: 0}
-    - {x: -0.31896636, y: -0.3931073, z: 0}
-    - {x: -0.6753148, y: -0.52828133, z: 0}
-    - {x: -1.0850441, y: -0.36012816, z: 0}
+    - {x: -1, y: 0, z: 0}
+    - {x: -0.5, y: 0.5, z: 0}
+    - {x: -0.05569324, y: 0.45190954, z: 0}
+    - {x: 0.68309975, y: 0.4900548, z: 0}
+    - {x: 1.4218925, y: 0.52820003, z: 0}
+    - {x: 2.3610258, y: 0.26498306, z: 0}
+    - {x: 2.5, y: 0, z: 0}
+    - {x: 2.6389742, y: -0.26498306, z: 0}
+    - {x: -1.5, y: -0.5, z: 0}
     rotations:
-    - {x: 0, y: 0, z: 0, w: 1}
-    - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
