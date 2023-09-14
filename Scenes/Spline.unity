@@ -451,7 +451,6 @@ MonoBehaviour:
     anchorColor: {r: 1, g: 0, b: 0, a: 1}
     controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     arrowColor: {r: 0, g: 0, b: 0, a: 1}
-    arrowDistributionByDistance: 0
     arrowLength: 0.1
     arrowDistributionByDistance: 1
     arrowDistribution: 40
