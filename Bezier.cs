@@ -6,6 +6,7 @@ public static class Bezier
 {
     public static Vector3 QuadratcBezier(Vector3 p1, Vector3 p2, Vector3 p3, float t)
     {
+
         Vector3 a = Vector3.Lerp(p1, p2, t);
         Vector3 b = Vector3.Lerp(p2, p3, t);
         return Vector3.Lerp(a, b, t);
@@ -13,6 +14,9 @@ public static class Bezier
     
     public static Vector3 CubicBezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, float t)
     {
+        if (t < 0 && t > 1)
+            throw new System.ArgumentException("t must be between 0 and 1", nameof(t));
+
         Vector3 a = QuadratcBezier(p1, p2, p3, t);
         Vector3 b = QuadratcBezier(p2, p3, p4, t);
         return Vector3.Lerp(a, b, t);
@@ -29,6 +33,9 @@ public static class Bezier
     /// <returns>The estimated distance of the Beziere Curve in meters</returns>
     public static float EstimateCurveLength(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution)
     {
+        if (resolution <= 0)
+            throw new System.ArgumentException("resolution must be greater than 0", nameof(resolution));
+
         float length = 0;
         Vector3 previousPoint = p1;
         for (int i = 1; i <= resolution; i++)
@@ -43,8 +50,13 @@ public static class Bezier
 
     public static float[] GetEqualDistancesT(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, float segmentLength, int resolution)
     {
+        if (segmentLength <= 0)
+            throw new System.ArgumentException("segmentLength must be greater than 0", nameof(segmentLength));
+        if (resolution <= 0)
+            throw new System.ArgumentException("resolution must be greater than 0", nameof(resolution));
+
         float curveLength = EstimateCurveLength(p1, p2, p3, p4, resolution);
-        int numPoints = Mathf.CeilToInt(curveLength / segmentLength);
+        int numPoints = Mathf.FloorToInt(curveLength / segmentLength);
         float[] ts = new float[numPoints];
 
         int currentSegment = 0;

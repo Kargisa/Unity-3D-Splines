@@ -1,10 +1,5 @@
-using log4net.Util;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Experimental.GlobalIllumination;
 using UnityEngine.Splines;
 
 [CustomEditor(typeof(SplineMover))]
@@ -23,8 +18,9 @@ public class SplineMoverEditor : Editor
             _path = _spline.path;
 
         }
-        catch (System.Exception)
+        catch (System.Exception e)
         {
+            Debug.LogError(e.Message);
             throw new System.Exception("CameraEditor 'initialization Error' some props were not correctly initialized");
         }
     }
@@ -118,13 +114,30 @@ public class SplineMoverEditor : Editor
     {
         float arrowsDistr = _spline.custom.arrowDistribution;
         Handles.color = _spline.custom.arrowColor;
-        for (int j = 0; j < _path.NumSegments; j++)
+        if (_spline.custom.arrowDistributionByDistance)
         {
-            for (int i = 0; i <= arrowsDistr; i++)
+            for (int i = 0; i < _path.NumDistancesT; i++)
             {
-                Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistr);
-                Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistr);
-                Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                float[] distancesT = _path.GetDistancesT(i);
+                for (int j = 0; j < distancesT.Length; j++)
+                {
+                    Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
+                    Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
+                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                }
+            }
+        }
+        else
+        {
+            float arrowsDistribution = _spline.custom.arrowDistribution;
+            for (int j = 0; j < _path.NumSegments; j++)
+            {
+                for (int i = 0; i < arrowsDistribution; i++)
+                {
+                    Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
+                    Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
+                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                }
             }
         }
 
