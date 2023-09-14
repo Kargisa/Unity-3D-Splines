@@ -16,7 +16,7 @@ public class SplineController : MonoBehaviour
     [HideInInspector]
     public SplineCustomizer custom;
     [HideInInspector]
-    public bool customizerFoldOut = false;
+    public bool customizerFoldOut = true;
 #endif
 
     [HideInInspector]
@@ -37,7 +37,7 @@ public class SplineController : MonoBehaviour
     /// <returns>Position on the spline [local space]</returns>
     public Vector3 CalculatePosition(float t)
     {
-         int numSegments = path.NumSegments;
+        int numSegments = path.NumSegments;
         t = Mathf.Clamp(t, 0, numSegments);
         int currentSegment = Mathf.FloorToInt(t) + (t == numSegments ? -1 : 0);
         float segmentT = t - currentSegment;
@@ -77,6 +77,30 @@ public class SplineController : MonoBehaviour
     /// <param name="t">progress clamped between <c>[0 and NumSegments]</c></param>
     /// <returns>Rotation on the spline [world space]</returns>
     public Quaternion CalculateRotationWorld(float t) => transform.rotation * CalculateRotation(t);
+
+    /// <summary>
+    /// Use custom resolution for the bezier length calculations
+    /// </summary> 
+    /// <param name="resolution">The resolution of the Bezier</param>
+    /// <returns>Length of the spline in <c>meters</c></returns>
+    public float CalculateSplineLength(int resolution)
+    {
+        float length = 0;
+        for (int i = 0; i < path.NumSegments; i++)
+        {
+            Vector3[] points = path.GetPointsInSegment(i);
+            length += Bezier.EstimateCurveLength(points[0], points[1], points[2], points[3], resolution);
+        }
+        return length;
+    }
+    
+    /// <summary>
+    /// Calculates the length of the spline based on the given resolution
+    /// </summary> 
+    /// <param name="resolution">The resolution option of the Bezier</param>
+    /// <returns>Length of the spline in <c>meters</c></returns>
+    public float CalculateSplineLength(BezierResolution resolution = BezierResolution.High) => CalculateSplineLength((int)resolution);
+
 
     public override string ToString() => $"path: {path}";
 }

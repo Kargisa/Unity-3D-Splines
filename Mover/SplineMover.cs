@@ -116,4 +116,15 @@ public class SplineMover : MonoBehaviour
         _moveTransform = true;
         _progressToMoveTo = t;
     }
+
+    /// <summary>
+    /// Moves the transform on the spline with a certain velocity
+    /// </summary>
+    /// <param name="velocity">velocity in <c>m/s</c></param>
+    /// <param name="distance">distance to move in <c>meters</c></param>
+    public void MoveWithVelocity(float velocity, float distance, MoveMode mode = MoveMode.Transform)
+    {
+        //TODO: implement
+        throw new NotImplementedException();
+    }
 }
