@@ -120,11 +120,14 @@ public class SplineMover : MonoBehaviour
     /// <summary>
     /// Moves the transform on the spline with a certain velocity
     /// </summary>
-    /// <param name="velocity">velocity in <c>m/s</c></param>
-    /// <param name="distance">distance to move in <c>meters</c></param>
-    public void MoveWithVelocity(float velocity, float distance, MoveMode mode = MoveMode.Transform)
+    /// <param name="velocity">velocity in <c>units/s</c></param>
+    public void MoveWithVelocity(float velocity, MoveMode mode = MoveMode.Transform)
     {
-        //TODO: implement
-        throw new NotImplementedException();
+        int currentSegment = Mathf.FloorToInt(progess) + (progess == splineController.path.NumSegments ? -1 : 0);
+        Vector3[] points = splineController.path.GetPointsInSegment(currentSegment);
+        float segmentT = progess - currentSegment;
+
+        float t = Bezier.GetTFromDistance(points[0], points[1], points[2], points[3], 1000, segmentT, velocity) + currentSegment;
+        MoveTransformOnSpline(t);
     }
 }
