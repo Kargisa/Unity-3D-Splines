@@ -4,11 +4,11 @@
 public enum MoveMode
 {
     /// <summary>
-    /// <b>EXPERIMENTAL<b/>Use Unity Physics engine allows for collision detection
+    /// <b>EXPERIMENTAL</b> Use Unity Physics engine allows for collision detection
     /// </summary>
     Physics, //TODO: implementation
     /// <summary>
-    /// Move the transform
+    /// Moves the transform
     /// </summary>
     Transform
 }
