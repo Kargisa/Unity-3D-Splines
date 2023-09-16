@@ -75,8 +75,7 @@ public static class Bezier
             previousPoint = currentPoint;
             currentSegment++;
         }
-        Debug.Log(currentSegment);
-        return (float)currentSegment / resolution * dir + start;
+        return Mathf.Clamp01(((float)currentSegment - 1) / resolution * dir + start);
     }
 
 
