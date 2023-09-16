@@ -328,7 +328,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 821899420}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0, z: 0}
+  m_LocalPosition: {x: -3.0246513, y: 0.020767093, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -393,7 +393,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   showPath: 1
   transToMove: {fileID: 821899423}
-  splineController: {fileID: 0}
+  splineController: {fileID: 1455397897}
   progess: 0
 --- !u!1 &1455397895
 GameObject:
@@ -404,6 +404,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1455397896}
+  - component: {fileID: 1455397897}
   m_Layer: 0
   m_Name: Spline
   m_TagString: Untagged
@@ -426,3 +427,66 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1455397897
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1455397895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bad63f5f33f40c489063026d0793f7b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pathFoldOut: 0
+  rotationsFoldOut: 0
+  infoFoldOut: 0
+  checkpointsFoldOut: 0
+  isRotate: 0
+  custom:
+    splineColor: {r: 0, g: 1, b: 0, a: 1}
+    selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    connectionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    anchorColor: {r: 1, g: 0, b: 0, a: 1}
+    controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    arrowColor: {r: 0, g: 0, b: 0, a: 1}
+    arrowLength: 0.1
+    arrowDistributionByDistance: 0
+    arrowDistribution: 40
+    arrowResolution: 5000
+    arrowDistance: 0.05
+  customizerFoldOut: 1
+  path:
+    points:
+    - {x: -3.0246513, y: 0.020767093, z: 0}
+    - {x: -3.0128965, y: -0.4348377, z: 0}
+    - {x: -2.5857205, y: -0.68703926, z: 0}
+    - {x: -2.63526, y: -0.058873773, z: 0}
+    - {x: -2.6847997, y: 0.5692917, z: 0}
+    - {x: 2.153637, y: -0.6860796, z: 0}
+    - {x: 1.9426625, y: 0.0072589517, z: 0}
+    - {x: 1.731688, y: 0.7005975, z: 0}
+    - {x: 0.74117714, y: 4.0725636, z: 0}
+    - {x: -0.7166118, y: 4.013575, z: 0}
+    - {x: -2.1744013, y: 3.9545863, z: 0}
+    - {x: -3.036406, y: 0.47637188, z: 0}
+    rotations:
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
+    is2D: 1
+    isClosed: 1
+    checkpoints:
+    - foldOut: 0
+      points:
+      - {x: -1, y: 0, z: 0}
+      - {x: -0.5, y: 0.5, z: 0}
+      - {x: 0.5, y: -0.5, z: 0}
+      - {x: 1, y: 0, z: 0}
+      rotations:
+      - {x: 0, y: 0, z: 0, w: 1}
+      - {x: 0, y: 0, z: 0, w: 1}
+      isClosed: 0
+      is2D: 1

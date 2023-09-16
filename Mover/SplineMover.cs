@@ -26,27 +26,23 @@ public class SplineMover : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
             MoveToNextSegment(2);
 
+        MoveWithVelocity(0.5f);
+
         if (_moveTransform)
         {
             if (_progressToMoveTo > progess)
             {
                 progess += Time.deltaTime / _moveTime;
                 if (progess >= _progressToMoveTo)
-                {
                     _moveTransform = false;
-                    progess = _progressToMoveTo;
-                }
             }
             else
             {
                 progess -= Time.deltaTime / _moveTime;
                 if (progess <= _progressToMoveTo)
-                {
                     _moveTransform = false;
-                    progess = _progressToMoveTo;
-                }
             }
-            MoveTransformOnSpline(progess);
+            MoveTransformOnSpline(_progressToMoveTo);
         }
     }
 
@@ -62,6 +58,7 @@ public class SplineMover : MonoBehaviour
         Quaternion rot = splineController.CalculateRotationWorld(value);
 
         transToMove.SetPositionAndRotation(pos, rot);
+        progess = splineController.path.IsClosed ? IndexHelper.LoopIndex(value, splineController.path.NumSegments) : value;
     }
 
     /// <summary>
@@ -123,11 +120,18 @@ public class SplineMover : MonoBehaviour
     /// <param name="velocity">velocity in <c>units/s</c></param>
     public void MoveWithVelocity(float velocity, MoveMode mode = MoveMode.Transform)
     {
+        float delta = mode switch
+        {
+            MoveMode.Transform => Time.deltaTime,
+            MoveMode.Physics => Time.fixedDeltaTime,
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+
         int currentSegment = Mathf.FloorToInt(progess) + (progess == splineController.path.NumSegments ? -1 : 0);
         Vector3[] points = splineController.path.GetPointsInSegment(currentSegment);
         float segmentT = progess - currentSegment;
 
-        float t = Bezier.GetTFromDistance(points[0], points[1], points[2], points[3], 1000, segmentT, velocity) + currentSegment;
+        float t = Bezier.GetTFromDistance(points[0], points[1], points[2], points[3], 1000, segmentT, velocity * delta) + currentSegment;
         MoveTransformOnSpline(t);
     }
 }
