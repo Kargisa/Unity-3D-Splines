@@ -8,9 +8,8 @@ public class PathCheckpoint
 {
 #if UNITY_EDITOR
     [HideInInspector]
-    public bool foldOut;  
+    public bool foldOut;
 #endif
-
     [HideInInspector]
     public List<Vector3> points;
 
@@ -29,7 +28,9 @@ public class PathCheckpoint
         this.rotations = rotations;
         this.isClosed = isClosed;
         this.is2D = is2D;
-        
+
+#if UNITY_EDITOR
         foldOut = false;
+#endif
     }
 }

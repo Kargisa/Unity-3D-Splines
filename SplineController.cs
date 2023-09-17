@@ -1,4 +1,4 @@
-using UnityEditor.ShaderGraph.Drawing;
+using TMPro;
 using UnityEngine;
 
 public class SplineController : MonoBehaviour
