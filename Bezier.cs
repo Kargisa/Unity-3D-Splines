@@ -70,12 +70,15 @@ public static class Bezier
         while (currentLength < Mathf.Abs(length) && currentSegment < resolution)
         {
             float t = (float)currentSegment / resolution * dir + start;
+            if (t >= 1)
+                return Mathf.Clamp01(t);
             Vector3 currentPoint = CubicBezier(p1, p2, p3, p4, t);
             currentLength += Vector3.Distance(previousPoint, currentPoint);
             previousPoint = currentPoint;
             currentSegment++;
         }
-        return Mathf.Clamp01(((float)currentSegment - 1) / resolution * dir + start);
+        float finalT = Mathf.Clamp01(((float)currentSegment - 1) / resolution * dir + start);
+        return finalT;
     }
 
 

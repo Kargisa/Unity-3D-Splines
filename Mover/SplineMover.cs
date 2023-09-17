@@ -52,8 +52,6 @@ public class SplineMover : MonoBehaviour
     /// <param name="value">progress on the spline</param>
     public void MoveTransformOnSpline(float value)
     {
-        value = Mathf.Clamp(value, 0, splineController.path.NumSegments);
-
         Vector3 pos = splineController.CalculatePositionWorld(value);
         Quaternion rot = splineController.CalculateRotationWorld(value);
 
@@ -131,7 +129,7 @@ public class SplineMover : MonoBehaviour
         Vector3[] points = splineController.path.GetPointsInSegment(currentSegment);
         float segmentT = progess - currentSegment;
 
-        float t = Bezier.GetTFromDistance(points[0], points[1], points[2], points[3], 1000, segmentT, velocity * delta) + currentSegment;
+        float t = Bezier.GetTFromDistance(points[0], points[1], points[2], points[3], 10000, segmentT, velocity * delta) + currentSegment;
         MoveTransformOnSpline(t);
     }
 }
