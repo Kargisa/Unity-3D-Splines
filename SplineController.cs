@@ -1,3 +1,4 @@
+using System.Data.Common;
 using TMPro;
 using UnityEngine;
 
@@ -23,12 +24,19 @@ public class SplineController : MonoBehaviour
     [HideInInspector]
     public Path path;
 
+    private void Start()
+    {
+        CubicBezier b = path.GetBezierOfSegment(0);
+        Debug.Log("L " + b.Length);
+        Debug.Log(b.FastLengthEstimation());
+    }
+
     /// <summary>
-    /// Creates an new path at <c>SplineController.transform.position</c> in local space
+    /// Creates an new path at 0,0,0 in local space
     /// </summary>
     public void CreatePath()
     {
-        path = new Path(transform.position);
+        path = new Path(new Vector3(0, 0, 0));
     }
 
     /// <summary>
@@ -43,9 +51,9 @@ public class SplineController : MonoBehaviour
         int currentSegment = Mathf.FloorToInt(t) + (t == numSegments ? -1 : 0);
         float segmentT = t - currentSegment;
 
-        Vector3[] points = path.GetPointsInSegment(currentSegment);
+        CubicBezier bezier = path.GetBezierOfSegment(currentSegment);
 
-        Vector3 p = Bezier.CubicBezier(points[0], points[1], points[2], points[3], segmentT);
+        Vector3 p = Bezier.CubicBezier(bezier.p1, bezier.p2, bezier.p3, bezier.p4, segmentT);
 
         return p;
     }
@@ -94,7 +102,7 @@ public class SplineController : MonoBehaviour
         }
         return length;
     }
-    
+
     /// <summary>
     /// Calculates the length of the spline based on the given resolution
     /// </summary> 
