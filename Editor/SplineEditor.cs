@@ -397,6 +397,7 @@ public class SplineEditor : Editor
 
             Undo.RecordObject(_spline, "Move Point");
             _path.MovePoint(i, newPos);
+
         }
     }
 

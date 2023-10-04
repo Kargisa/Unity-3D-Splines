@@ -43,7 +43,7 @@ public class Path
         distancesT = new List<float[]>() { new float[0] };
 
         Is2D = true;
-
+        
         CreateCheckpoint();
     }
 
@@ -188,6 +188,7 @@ public class Path
     }
 
     public Vector3[] GetPointsInSegment(int index) => new Vector3[4] { points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopIndex(index * 3 + 3)] };
+    public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopIndex(index * 3 + 3)]);
 
     public void ToggleClosed()
     {

@@ -1,11 +1,11 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Splines;
 
 [CustomEditor(typeof(SplineMover))]
 public class SplineMoverEditor : Editor
 {
-    SplineMover _controller;
+    SplineMover _mover;
     SplineController _spline;
     Path _path;
 
@@ -13,8 +13,8 @@ public class SplineMoverEditor : Editor
     {
         try
         {
-            _controller = (SplineMover)target;
-            _spline = _controller.splineController;
+            _mover = (SplineMover)target;
+            _spline = _mover.splineController;
             _path = _spline.path;
 
         }
@@ -35,7 +35,7 @@ public class SplineMoverEditor : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Path", EditorStyles.boldLabel);
-        PaintProgress(ref _controller.progess, _spline.path.NumSegments, "Progress");
+        PaintProgress(ref _mover.progess, _spline.path.NumSegments, "Progress");
         PathButton();
          
     }
@@ -55,23 +55,23 @@ public class SplineMoverEditor : Editor
         }
 
         if (prevValue != value)
-            _controller.MoveTransformOnSpline(value);
+            _mover.MoveTransformOnSpline(value);
     }
 
     private void PathButton()
     {
         if (GUILayout.Button("Toggle Path"))
         {
-            _controller.showPath = !_controller.showPath;
+            _mover.showPath = !_mover.showPath;
             SceneView.RepaintAll();
         }
     }
 
     private bool NotNullProps()
     {
-        if (_spline == null && _controller.splineController != null)
+        if (_spline == null && _mover.splineController != null)
         {
-            _spline = _controller.splineController;
+            _spline = _mover.splineController;
             _path = _spline.path;
         }
         else if (_spline == null)
@@ -91,7 +91,7 @@ public class SplineMoverEditor : Editor
         Matrix4x4 oldMatrix = Handles.matrix;
         Handles.matrix = _spline.transform.localToWorldMatrix;
 
-        _controller.MoveTransformOnSpline(_controller.progess);
+        _mover.MoveTransformOnSpline(_mover.progess);
         Draw();
 
         Handles.matrix = oldMatrix;
@@ -99,7 +99,7 @@ public class SplineMoverEditor : Editor
 
     private void Draw()
     {
-        if (!_controller.showPath)
+        if (!_mover.showPath)
             return;
 
         for (int i = 0; i < _path.NumSegments; i++)
@@ -112,7 +112,6 @@ public class SplineMoverEditor : Editor
     }
     private void DrawRotation()
     {
-        float arrowsDistr = _spline.custom.arrowDistribution;
         Handles.color = _spline.custom.arrowColor;
         if (_spline.custom.arrowDistributionByDistance)
         {
