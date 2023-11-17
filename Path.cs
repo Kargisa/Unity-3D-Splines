@@ -21,9 +21,6 @@ public class Path
     [HideInInspector]
     public List<PathCheckpoint> checkpoints;
 
-    [SerializeField, HideInInspector]
-    private List<float[]> distancesT;
-
 
     public Path(Vector3 center)
     {
@@ -39,8 +36,6 @@ public class Path
             Quaternion.identity,
             Quaternion.identity
         };
-
-        distancesT = new List<float[]>() { new float[0] };
 
         Is2D = true;
         
@@ -58,8 +53,6 @@ public class Path
     public int NumSegments { get => points.Count / 3; }
 
     public int NumRotations { get => rotations.Count; }
-
-    public int NumDistancesT { get => distancesT.Count; }
 
     public bool IsNull { get => points == null; }
 
@@ -89,18 +82,6 @@ public class Path
 
     public Quaternion GetRotation(int i) => rotations[LoopRotationIndex(i)];
 
-    public float[] GetDistancesT(int i) => distancesT[LoopDistancesTIndex(i)];
-
-    public List<float[]> RecalculateDistancesT(float distance, int resolution)
-    {
-        for (int i = 0; i < NumSegments; i++)
-        {
-            Vector3[] segPoints = GetPointsInSegment(i);
-            distancesT[i] = Bezier.GetEqualDistancesT(segPoints[0], segPoints[1], segPoints[2], segPoints[3], distance, resolution);
-        }
-        return distancesT;
-    }
-
     /// <summary>
     /// Adds a new Segment at the point
     /// </summary>
@@ -120,7 +101,6 @@ public class Path
             points.Add(point);
         }
         rotations.Add(rotation);
-        distancesT.Add(new float[0]);
     }
 
     /// <summary>
@@ -140,7 +120,6 @@ public class Path
         points.Insert(index, pos);
 
         rotations.Insert(i, Quaternion.identity);
-        distancesT.Insert(i, new float[0]);
     }
 
     public void DeletePoint(int i)
@@ -187,8 +166,7 @@ public class Path
         return true;
     }
 
-    public Vector3[] GetPointsInSegment(int index) => new Vector3[4] { points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopIndex(index * 3 + 3)] };
-    public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopIndex(index * 3 + 3)]);
+    public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopIndex(index * 3 + 3)], rotations[index * 3], rotations[LoopIndex(index * 3 + 1)]);
 
     public void ToggleClosed()
     {
@@ -216,8 +194,6 @@ public class Path
     private int LoopIndex(int i) => IndexHelper.LoopIndex(i, points.Count);
 
     private int LoopRotationIndex(int i) => IndexHelper.LoopIndex(i, rotations.Count);
-
-    private int LoopDistancesTIndex(int i) => IndexHelper.LoopIndex(i, distancesT.Count);
 
     public void MovePoint(int i, Vector3 pos)
     {

@@ -1,6 +1,7 @@
 using System.Data.Common;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class SplineController : MonoBehaviour
 {
@@ -97,8 +98,8 @@ public class SplineController : MonoBehaviour
         float length = 0;
         for (int i = 0; i < path.NumSegments; i++)
         {
-            Vector3[] points = path.GetPointsInSegment(i);
-            length += Bezier.EstimateCurveLength(points[0], points[1], points[2], points[3], resolution);
+            CubicBezier bezier = path.GetBezierOfSegment(i);
+            length += bezier.GetEstimatedLength(resolution);
         }
         return length;
     }
@@ -108,7 +109,19 @@ public class SplineController : MonoBehaviour
     /// </summary> 
     /// <param name="resolution">The resolution option of the Bezier</param>
     /// <returns>Length of the spline in <c>meters</c></returns>
-    public float CalculateSplineLength(BezierResolution resolution = BezierResolution.High) => CalculateSplineLength((int)resolution);
+    public float CalculateSplineLength(BezierResolution resolution = BezierResolution.Auto)
+    {
+        if (resolution != BezierResolution.Auto)
+            return CalculateSplineLength((int)resolution);
+
+        float length = 0;
+        for (int i = 0; i < path.NumSegments; i++)
+        {
+            CubicBezier bezier = path.GetBezierOfSegment(i);
+            length += bezier.Length;
+        }
+        return length;
+    }
 
 
     public override string ToString() => $"path: {path}";

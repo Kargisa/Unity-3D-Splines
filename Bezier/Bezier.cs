@@ -33,8 +33,7 @@ public static class Bezier
     /// <returns>The estimated length of the Beziere Curve in meters</returns>
     public static float EstimateCurveLength(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution)
     {
-        if (resolution <= 0)
-            throw new System.ArgumentException("resolution not be smaller than 0", nameof(resolution));
+        resolution = Mathf.Max(resolution, 0);
 
         float length = 0;
         Vector3 previousPoint = p1;
@@ -53,13 +52,12 @@ public static class Bezier
     /// </summary>
     /// <param name="p1">anchor 1</param>
     /// <param name="p2">controle 1</param>
-    /// <param name="p3">controle 2</param>
+    /// <param name="p3">anchor 2</param>
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
     /// <returns>The estimated length of the Beziere Curve in meters</returns>
     public static float EstimateCurveLength(Vector3 p1, Vector3 p2, Vector3 p3, int resolution)
     {
-        if (resolution <= 0)
-            throw new System.ArgumentException("resolution not be smaller than 0", nameof(resolution));
+        resolution = Mathf.Max(resolution, 0);
 
         float length = 0;
         Vector3 previousPoint = p1;
@@ -82,17 +80,17 @@ public static class Bezier
     /// <param name="p4">anchor 2</param>
     /// <param name="start">The value T from where the distance starts from</param>
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
-    /// <param name="length">The distnace from a <c>start</c> value T</param>
+    /// <param name="distance">The distnace from a <c>start</c> value T</param>
     /// <returns>The value T that is <c>length</c> away from <c>start</c></returns>
-    public static float GetTFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution, float start, float length)
+    public static float GetTFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution, float start, float distance)
     {
-        int dir = float.IsNegative(length) ? -1 : 1;
+        int dir = float.IsNegative(distance) ? -1 : 1;
         start = Mathf.Clamp01(start);
         Vector3 previousPoint = CubicBezier(p1, p2, p3, p4, start);
         
         float currentLength = 0;
         int currentSegment = 0;
-        while (currentLength < Mathf.Abs(length) && currentSegment < resolution)
+        while (currentLength < Mathf.Abs(distance) && currentSegment < resolution)
         {
             float t = (float)currentSegment / resolution * dir + start;
             if (t >= 1)
@@ -114,17 +112,17 @@ public static class Bezier
     /// <param name="p3">controle 2</param>
     /// <param name="start">The value T from where the distance starts from</param>
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
-    /// <param name="length">The distnace from a <c>start</c> value T</param>
+    /// <param name="distance">The distnace from a <c>start</c> value T</param>
     /// <returns>The value T that is <c>length</c> away from <c>start</c></returns>
-    public static float GetTFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, int resolution, float start, float length)
+    public static float GetTFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, int resolution, float start, float distance)
     {
-        int dir = float.IsNegative(length) ? -1 : 1;
+        int dir = float.IsNegative(distance) ? -1 : 1;
         start = Mathf.Clamp01(start);
         Vector3 previousPoint = QuadratcBezier(p1, p2, p3, start);
 
         float currentLength = 0;
         int currentSegment = 0;
-        while (currentLength < Mathf.Abs(length) && currentSegment < resolution)
+        while (currentLength < Mathf.Abs(distance) && currentSegment < resolution)
         {
             float t = (float)currentSegment / resolution * dir + start;
             if (t >= 1)
@@ -180,7 +178,7 @@ public static class Bezier
     }
 
     /// <summary>
-    /// Gets all values T with distance <c>segmentLength</c> from each other
+    /// Gets all values T with distance <see>segmentLength</c> from each other
     /// </summary>
     /// <param name="p1">anchor 1</param>
     /// <param name="p2">controle 1</param>
@@ -190,10 +188,8 @@ public static class Bezier
     /// <returns>All values <c>T</c> that are equally distaned from each other</returns>
     public static float[] GetEqualDistancesT(Vector3 p1, Vector3 p2, Vector3 p3, float segmentLength, int resolution)
     {
-        if (segmentLength <= 0)
-            throw new System.ArgumentException("segmentLength must not be smaller than 0", nameof(segmentLength));
-        if (resolution <= 0)
-            throw new System.ArgumentException("resolution must not be smaller than 0", nameof(resolution));
+        segmentLength = Mathf.Max(segmentLength, 0f);
+        resolution = Mathf.Max(resolution, 0);
 
         float curveLength = EstimateCurveLength(p1, p2, p3, resolution);
         int numPoints = Mathf.FloorToInt(curveLength / segmentLength);

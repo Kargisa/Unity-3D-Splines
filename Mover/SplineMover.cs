@@ -126,10 +126,10 @@ public class SplineMover : MonoBehaviour
         };
 
         int currentSegment = Mathf.FloorToInt(progess) + (progess == splineController.path.NumSegments ? -1 : 0);
-        Vector3[] points = splineController.path.GetPointsInSegment(currentSegment);
+        CubicBezier bezier = splineController.path.GetBezierOfSegment(currentSegment);
         float segmentT = progess - currentSegment;
 
-        float t = Bezier.GetTFromDistance(points[0], points[1], points[2], points[3], 10000, segmentT, velocity * delta) + currentSegment;
+        float t = bezier.TFromDistance(10000, segmentT, velocity * delta) + currentSegment;
         MoveTransformOnSpline(t);
     }
 }
