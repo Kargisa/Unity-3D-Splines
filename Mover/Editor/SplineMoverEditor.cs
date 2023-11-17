@@ -104,9 +104,9 @@ public class SplineMoverEditor : Editor
 
         for (int i = 0; i < _path.NumSegments; i++)
         {
-            Vector3[] points = _path.GetPointsInSegment(i);
+            CubicBezier bezier = _path.GetBezierOfSegment(i);
 
-            Handles.DrawBezier(points[0], points[3], points[1], points[2], _spline.custom.splineColor, null, 2);
+            Handles.DrawBezier(bezier.p1, bezier.p2, bezier.p3, bezier.p4, _spline.custom.splineColor, null, 2);
         }
         DrawRotation();
     }
@@ -115,16 +115,18 @@ public class SplineMoverEditor : Editor
         Handles.color = _spline.custom.arrowColor;
         if (_spline.custom.arrowDistributionByDistance)
         {
-            for (int i = 0; i < _path.NumDistancesT; i++)
-            {
-                float[] distancesT = _path.GetDistancesT(i);
-                for (int j = 0; j < distancesT.Length; j++)
-                {
-                    Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
-                    Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
-                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
-                }
-            }
+            //TODO: arrwos by distance
+
+            //for (int i = 0; i < _path.NumDistancesT; i++)
+            //{
+            //    float[] distancesT = _path.GetDistancesT(i);
+            //    for (int j = 0; j < distancesT.Length; j++)
+            //    {
+            //        Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
+            //        Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
+            //        Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+            //    }
+            //}
         }
         else
         {

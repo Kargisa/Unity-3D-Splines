@@ -42,21 +42,9 @@ public class SplineEditor : Editor
         DeleteCheckpoint();
         EditorGUILayout.Space();
         DrawSplineCustomizer();
-        DrawUpdateBezierDistButton();   // temporary implementation
         EditorGUILayout.Space();
         Info(ref _spline.infoFoldOut);
 
-    }
-    // temporary implementation
-    private void DrawUpdateBezierDistButton()
-    {
-        EditorGUILayout.LabelField("Temporare");
-        GUI.enabled = _spline.custom.arrowDistributionByDistance;
-        if (GUILayout.Button("Recalculate Bezier Distances"))
-        {
-            _path.RecalculateDistancesT(_spline.custom.arrowDistance, _spline.custom.arrowResolution);
-        }
-        GUI.enabled = true;
     }
 
     private void ChangeTo2D()
@@ -194,11 +182,14 @@ public class SplineEditor : Editor
 
         EditorGUILayout.Space();
 
-        _spline.custom.arrowDistributionByDistance = EditorGUILayout.Toggle("Arrow Distribution By Distance", _spline.custom.arrowDistributionByDistance);
-        bool isDist = _spline.custom.arrowDistributionByDistance;
+        //TODO: arrows by distance
+        //_spline.custom.arrowDistributionByDistance = EditorGUILayout.Toggle("Arrow Distribution By Distance", _spline.custom.arrowDistributionByDistance);
+        //bool isDist = _spline.custom.arrowDistributionByDistance;
 
         _spline.custom.arrowLength = EditorGUILayout.Slider("Arrow Length", _spline.custom.arrowLength, 0, 1f);
-        if (isDist)
+
+        //INFO: temporarily disabled
+        if (false)
         {
             int clampedRes = _spline.custom.arrowResolution < 1 ? 1 : _spline.custom.arrowResolution;
             _spline.custom.arrowResolution = EditorGUILayout.IntField("Arrow Resolution", clampedRes);
@@ -291,14 +282,14 @@ public class SplineEditor : Editor
 
             for (int i = 0; i < _path.NumSegments; i++)
             {
-                Vector3[] loaclPoints = _path.GetPointsInSegment(i);
-                Vector3[] points = new Vector3[4];
-                for (int j = 0; j < points.Length; j++)
+                CubicBezier localBezier = _path.GetBezierOfSegment(i);
+                CubicBezier bezier = new CubicBezier();
+                for (int j = 0; j < bezier.Length; j++)
                 {
-                    points[j] = _spline.transform.TransformPoint(loaclPoints[j]);
+                    bezier[j] = _spline.transform.TransformPoint(localBezier[j]);
                 }
 
-                Vector3 p1TOp2 = points[3] - points[0];
+                Vector3 p1TOp2 = bezier.p4 - bezier.p1;
                 Vector3 planeNormal = Vector3.Cross(p1TOp2, _spline.transform.up).normalized;
 
                 float dot = Vector3.Dot(r.direction, planeNormal);
@@ -306,14 +297,14 @@ public class SplineEditor : Editor
                     continue;
 
 
-                float distToIntersection = Vector3.Dot(points[0] - r.origin, planeNormal) / dot;
+                float distToIntersection = Vector3.Dot(bezier.p1 - r.origin, planeNormal) / dot;
                 if (distToIntersection <= 0)
                     continue;
 
                 Vector3 pointOnPlane = r.origin + distToIntersection * r.direction;
                 _mousePosOnPlane = pointOnPlane;
 
-                float dist = HandleUtility.DistancePointBezier(pointOnPlane, points[0], points[3], points[1], points[2]);
+                float dist = HandleUtility.DistancePointBezier(pointOnPlane, bezier.p1, bezier.p4, bezier.p2, bezier.p3);
 
                 if (dist >= nearestDist)
                     continue;
@@ -365,15 +356,15 @@ public class SplineEditor : Editor
     {
         for (int i = 0; i < _path.NumSegments; i++)
         {
-            Vector3[] points = _path.GetPointsInSegment(i);
+            CubicBezier bezier = _path.GetBezierOfSegment(i);
             if (!isRotate)
             {
                 Handles.color = _spline.custom.connectionColor;
-                Handles.DrawLine(points[0], points[1]);
-                Handles.DrawLine(points[2], points[3]);
+                Handles.DrawLine(bezier.p1, bezier.p2);
+                Handles.DrawLine(bezier.p3, bezier.p4);
             }
             Color color = _selectedSegment == i ? _spline.custom.selectedColor : _spline.custom.splineColor;
-            Handles.DrawBezier(points[0], points[3], points[1], points[2], color, null, 2);
+            Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, color, null, 2);
 
             if (isRotate)
                 DrawRotation();
@@ -410,6 +401,8 @@ public class SplineEditor : Editor
             Handles.FreeMoveHandle(_path[i * 3], size, Vector3.zero, Handles.CylinderHandleCap);
             Quaternion newQuat = Handles.RotationHandle(_path.GetRotation(i), _path[i * 3]);
 
+            if (newQuat == _path.GetRotation(i))
+                continue;
             Undo.RecordObject(_spline, "Rotate Point");
             _path.RotatePoint(i, newQuat);
         }
@@ -419,16 +412,18 @@ public class SplineEditor : Editor
 
         if (_spline.custom.arrowDistributionByDistance)
         {
-            for (int i = 0; i < _path.NumDistancesT; i++)
-            {
-                float[] distancesT = _path.GetDistancesT(i);
-                for (int j = 0; j < distancesT.Length; j++)
-                {
-                    Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
-                    Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
-                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
-                }
-            }
+            //TODO: arrows by distance
+
+            //for (int i = 0; i < _path.NumDistancesT; i++)
+            //{
+            //    float[] distancesT = _path.GetDistancesT(i);
+            //    for (int j = 0; j < distancesT.Length; j++)
+            //    {
+            //        Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
+            //        Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
+            //        Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+            //    }
+            //}
         }
         else
         {

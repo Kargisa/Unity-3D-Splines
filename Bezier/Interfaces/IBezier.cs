@@ -9,14 +9,14 @@ public interface IBezier
     /// </summary>
     /// <param name="resolution">resolution for the calculation</param>
     /// <returns>Estimated length of Bezier</returns>
-    public float GetLength(BezierResolution resolution);
+    public float GetEstimatedLength(BezierResolution resolution);
 
     /// <summary>
     /// Calculates the estiamted length of the Bezier
     /// </summary>
     /// <param name="resolution">custom resolution for the calculation</param>
     /// <returns>Estimated length of Bezier</returns>
-    public float GetLength(int resolution);
+    public float GetEstimatedLength(int resolution);
 
     /// <summary>
     /// Get the point on the Bezier <c>t</c>

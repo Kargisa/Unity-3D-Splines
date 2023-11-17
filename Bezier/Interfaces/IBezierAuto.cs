@@ -13,7 +13,7 @@ public interface IBezierAuto
     /// Automatically estimates the resolution for the Length calculations
     /// </summary>
     /// <returns>Estimated Length of the Bezier</returns>
-    public float GetLength();
+    public float GetEstimatedLength();
     /// <summary>
     /// VERY rough estimation of the length of the Bezier without segmenting it.<br />
     /// <b>Do not use for accurate calculations</b>
