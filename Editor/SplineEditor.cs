@@ -284,7 +284,7 @@ public class SplineEditor : Editor
             {
                 CubicBezier localBezier = _path.GetBezierOfSegment(i);
                 CubicBezier bezier = new CubicBezier();
-                for (int j = 0; j < bezier.Length; j++)
+                for (int j = 0; j < 4; j++)
                 {
                     bezier[j] = _spline.transform.TransformPoint(localBezier[j]);
                 }
@@ -295,7 +295,6 @@ public class SplineEditor : Editor
                 float dot = Vector3.Dot(r.direction, planeNormal);
                 if (dot <= 0.15f && dot >= -0.15f)
                     continue;
-
 
                 float distToIntersection = Vector3.Dot(bezier.p1 - r.origin, planeNormal) / dot;
                 if (distToIntersection <= 0)

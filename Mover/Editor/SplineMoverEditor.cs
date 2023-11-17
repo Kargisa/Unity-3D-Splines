@@ -106,7 +106,7 @@ public class SplineMoverEditor : Editor
         {
             CubicBezier bezier = _path.GetBezierOfSegment(i);
 
-            Handles.DrawBezier(bezier.p1, bezier.p2, bezier.p3, bezier.p4, _spline.custom.splineColor, null, 2);
+            Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, _spline.custom.splineColor, null, 2);
         }
         DrawRotation();
     }

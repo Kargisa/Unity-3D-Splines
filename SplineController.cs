@@ -54,9 +54,8 @@ public class SplineController : MonoBehaviour
 
         CubicBezier bezier = path.GetBezierOfSegment(currentSegment);
 
-        Vector3 p = Bezier.CubicBezier(bezier.p1, bezier.p2, bezier.p3, bezier.p4, segmentT);
+        return bezier.GetPoint(segmentT);
 
-        return p;
     }
 
     /// <summary>
