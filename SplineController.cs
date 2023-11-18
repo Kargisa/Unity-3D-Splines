@@ -25,12 +25,12 @@ public class SplineController : MonoBehaviour
     [HideInInspector]
     public Path path;
 
-    private void Start()
-    {
-        CubicBezier b = path.GetBezierOfSegment(0);
-        Debug.Log("L " + b.Length);
-        Debug.Log(b.FastLengthEstimation());
-    }
+    //private void Start()
+    //{
+    //    CubicBezier b = path.GetBezierOfSegment(2);
+    //    Debug.Log("L " + b.Length);
+    //    Debug.Log(b.FastLengthEstimation());
+    //}
 
     /// <summary>
     /// Creates an new path at 0,0,0 in local space
@@ -104,15 +104,11 @@ public class SplineController : MonoBehaviour
     }
 
     /// <summary>
-    /// Calculates the length of the spline based on the given resolution
+    /// Automatically calculates the length of the spline
     /// </summary> 
-    /// <param name="resolution">The resolution option of the Bezier</param>
     /// <returns>Length of the spline in <c>meters</c></returns>
-    public float CalculateSplineLength(BezierResolution resolution = BezierResolution.Auto)
+    public float CalculateSplineLength()
     {
-        if (resolution != BezierResolution.Auto)
-            return CalculateSplineLength((int)resolution);
-
         float length = 0;
         for (int i = 0; i < path.NumSegments; i++)
         {

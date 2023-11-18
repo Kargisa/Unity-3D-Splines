@@ -1,14 +1,14 @@
 /// <summary>
-/// Provides options for how the transform moves along the spline
+/// Modes for moving the object on the spline
 /// </summary>
 public enum MoveMode
 {
     /// <summary>
-    /// <b>EXPERIMENTAL</b> Use Unity Physics engine allows for collision detection
+    /// <b>EXPERIMENTAL</b> Use Unitys Physics engine
     /// </summary>
-    Physics, //TODO: implementation
+    Physics = 0,
     /// <summary>
     /// Moves the transform
     /// </summary>
-    Transform
+    Transform = 1
 }

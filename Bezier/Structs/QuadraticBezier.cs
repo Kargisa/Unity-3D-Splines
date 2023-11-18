@@ -33,14 +33,26 @@ public struct QuadraticBezier : IBezier, IBezierAuto
 
     public readonly float GetEstimatedLength(int resolution) => Bezier.EstimateCurveLength(p1, p2, p3, resolution);
 
-    public readonly float GetEstimatedLength(BezierResolution resolution) => Bezier.EstimateCurveLength(p1, p2, p3, (int)resolution);
+    //public readonly float GetEstimatedLength(BezierResolution resolution) => Bezier.EstimateCurveLength(p1, p2, p3, (int)resolution);
 
     public readonly Vector3 GetPoint(float t) => Bezier.QuadratcBezier(p1, p2, p3, t);
 
     public readonly float FastLengthEstimation() => (Vector3.Distance(p1, p2) + Vector3.Distance(p2, p3)) / 2 + Vector3.Distance(p1, p3) / 2;
 
-    public readonly float TFromDistance(int resolution, float start, float distance) => Bezier.GetTFromDistance(p1, p2, p3, resolution, start, distance);
+    public readonly float PointFromDistance(int resolution, float start, float distance) => Bezier.GetPointFromDistance(p1, p2, p3, resolution, start, distance);
 
-    public readonly float[] EqualDistancesT(float distance, int resolution) => Bezier.GetEqualDistancesT(p1, p2, p3, distance, resolution);
+    public readonly float[] EqualDistancePoints(float distance, int resolution) => Bezier.GetEqualDistancePoints(p1, p2, p3, distance, resolution);
 
+    public readonly float PointFromDistance(float start, float distance)
+    {
+        float resolution = distance / FastLengthEstimation() * ResPerMeter;
+        return PointFromDistance((int)resolution, start, distance);
+
+    }
+
+    public readonly float[] EqualDistancesT(float distance)
+    {
+        float resolution = FastLengthEstimation() * ResPerMeter;
+        return EqualDistancePoints(distance, (int)resolution);
+    }
 }
