@@ -13,7 +13,7 @@ public struct CubicBezier : IBezier, IBezierAuto
     public Vector3 p4 { get; set; }
     public Quaternion r1 { get; set; }
     public Quaternion r2 { get; set; }
-    public float Length { get => GetEstimatedLength(); }
+    public readonly float Length { get => GetEstimatedLength(); }
     public readonly int ResPerMeter => 1000;
 
 
@@ -76,13 +76,26 @@ public struct CubicBezier : IBezier, IBezierAuto
 
     public readonly float GetEstimatedLength(int resolution) => Bezier.EstimateCurveLength(p1, p2, p3, p4, resolution);
 
-    public readonly float GetEstimatedLength(BezierResolution resolution) => Bezier.EstimateCurveLength(p1, p2, p3, p4, (int)resolution); 
+    //public readonly float GetEstimatedLength(BezierResolution resolution) => Bezier.EstimateCurveLength(p1, p2, p3, p4, (int)resolution); 
 
     public readonly Vector3 GetPoint(float t) => Bezier.CubicBezier(p1, p2, p3, p4, t);
 
     public readonly float FastLengthEstimation() => new QuadraticBezier(p1, (3.0f * p3 - p4 + 3.0f * p2 - p1) / 4.0f, p3).Length;
 
-    public readonly float TFromDistance(int resolution, float start, float distance) => Bezier.GetTFromDistance(p1, p2, p3, p4, resolution, start, distance);
+    public readonly float PointFromDistance(int resolution, float start, float distance) => Bezier.GetPointFromDistance(p1, p2, p3, p4, resolution, start, distance);
 
-    public readonly float[] EqualDistancesT(float distance, int resolution) => Bezier.GetEqualDistancesT(p1, p2, p3, p4, distance, resolution);
+    public readonly float[] EqualDistancePoints(float distance, int resolution) => Bezier.GetEqualDistancePoints(p1, p2, p3, p4, distance, resolution);
+
+    public readonly float PointFromDistance(float start, float distance)
+    {
+        float resolution = distance * ResPerMeter;
+        return PointFromDistance((int)resolution, start, distance);
+
+    }
+
+    public readonly float[] EqualDistancesT(float distance)
+    {
+        float resolution = FastLengthEstimation() * ResPerMeter;
+        return EqualDistancePoints(distance, (int)resolution);
+    }
 }

@@ -135,6 +135,8 @@ GameObject:
   - component: {fileID: 163899752}
   - component: {fileID: 163899751}
   - component: {fileID: 163899750}
+  - component: {fileID: 163899755}
+  - component: {fileID: 163899754}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -221,13 +223,55 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 163899749}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 3.3021066, y: 0.9023059, z: 8.09}
+  m_LocalPosition: {x: -1, y: 0, z: 2.712}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &163899754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 163899749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b93d4b6596a4474eabbd00ca8e932d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showPath: 1
+  splineController: {fileID: 1455397897}
+  progress: 0
+--- !u!54 &163899755
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 163899749}
+  serializedVersion: 4
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!1 &243267356
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,7 +507,6 @@ GameObject:
   - component: {fileID: 821899422}
   - component: {fileID: 821899421}
   - component: {fileID: 821899424}
-  - component: {fileID: 821899425}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -538,7 +581,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 821899420}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.96243227, y: 0.65605676, z: 0}
+  m_LocalPosition: {x: 0.16, y: 0.24, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -589,22 +632,6 @@ MonoBehaviour:
     mipBias: 0
     varianceClampScale: 0.9
     contrastAdaptiveSharpening: 0
---- !u!114 &821899425
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 821899420}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 982b543bdf606c24690145da90be2cbd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  showPath: 1
-  transToMove: {fileID: 821899423}
-  splineController: {fileID: 1455397897}
-  progess: 0
 --- !u!1 &1455397895
 GameObject:
   m_ObjectHideFlags: 0
@@ -630,7 +657,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1455397895}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 2.712}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -649,7 +676,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bad63f5f33f40c489063026d0793f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathFoldOut: 0
+  pathFoldOut: 1
   rotationsFoldOut: 1
   infoFoldOut: 0
   checkpointsFoldOut: 0
@@ -663,16 +690,16 @@ MonoBehaviour:
     arrowColor: {r: 0, g: 0, b: 0, a: 1}
     arrowLength: 0.1
     arrowDistributionByDistance: 0
-    arrowDistribution: 20
+    arrowDistribution: 25
     arrowResolution: 5000
     arrowDistance: 0.05
   customizerFoldOut: 1
   path:
     points:
-    - {x: -0.96243227, y: 0.010056734, z: 0}
-    - {x: -0.46243227, y: 0.51005673, z: 0}
-    - {x: 0.73761475, y: -0.4124086, z: 0}
-    - {x: 1.098805, y: 0.082926854, z: 0}
+    - {x: -1, y: 0, z: 0}
+    - {x: -0.5, y: 0.5, z: 0}
+    - {x: 0.5, y: -0.5, z: 0}
+    - {x: 1, y: 0, z: 0}
     rotations:
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}

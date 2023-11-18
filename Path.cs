@@ -80,7 +80,7 @@ public class Path
         set { isClosed = value; }
     }
 
-    public Quaternion GetRotation(int i) => rotations[LoopRotationIndex(i)];
+    public Quaternion GetRotation(int i) => rotations[LoopRotationsIndex(i)];
 
     /// <summary>
     /// Adds a new Segment at the point
@@ -119,7 +119,7 @@ public class Path
         points.Insert(index, pos);
         points.Insert(index, pos);
 
-        rotations.Insert(i, Quaternion.identity);
+        rotations.Insert(i + 1, Quaternion.Slerp(rotations[i], rotations[LoopRotationsIndex(i + 1)], 0.5f));
     }
 
     public void DeletePoint(int i)
@@ -166,7 +166,7 @@ public class Path
         return true;
     }
 
-    public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopIndex(index * 3 + 3)], rotations[index * 3], rotations[LoopIndex(index * 3 + 1)]);
+    public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopPointsIndex(index * 3 + 3)], rotations[index], rotations[LoopRotationsIndex(index + 1)]);
 
     public void ToggleClosed()
     {
@@ -191,9 +191,9 @@ public class Path
         isClosed = !isClosed;
     }
 
-    private int LoopIndex(int i) => IndexHelper.LoopIndex(i, points.Count);
+    private int LoopPointsIndex(int i) => IndexHelper.LoopIndex(i, points.Count);
 
-    private int LoopRotationIndex(int i) => IndexHelper.LoopIndex(i, rotations.Count);
+    private int LoopRotationsIndex(int i) => IndexHelper.LoopIndex(i, rotations.Count);
 
     public void MovePoint(int i, Vector3 pos)
     {
@@ -208,9 +208,9 @@ public class Path
         if (i % 3 == 0)
         {
             if (i + 1 < points.Count || isClosed)
-                points[LoopIndex(i + 1)] += deltaMove;
+                points[LoopPointsIndex(i + 1)] += deltaMove;
             if (i - 1 >= 0 || isClosed)
-                points[LoopIndex(i - 1)] += deltaMove;
+                points[LoopPointsIndex(i - 1)] += deltaMove;
         }
         else
         {
@@ -219,10 +219,10 @@ public class Path
             int anchorIndex = nextPointIsAnchor ? i + 1 : i - 1;
             if ((correspondingControlIndex >= 0 && correspondingControlIndex < points.Count) || isClosed)
             {
-                float dist = (points[LoopIndex(anchorIndex)] - pos).magnitude;
-                Vector3 dir = (points[LoopIndex(anchorIndex)] - pos).normalized;
+                float dist = (points[LoopPointsIndex(anchorIndex)] - pos).magnitude;
+                Vector3 dir = (points[LoopPointsIndex(anchorIndex)] - pos).normalized;
 
-                points[LoopIndex(correspondingControlIndex)] = (Is2D ? (Vector2)(points[LoopIndex(anchorIndex)]) : points[LoopIndex(anchorIndex)]) + dir * dist;
+                points[LoopPointsIndex(correspondingControlIndex)] = (Is2D ? (Vector2)(points[LoopPointsIndex(anchorIndex)]) : points[LoopPointsIndex(anchorIndex)]) + dir * dist;
             }
         }
     }

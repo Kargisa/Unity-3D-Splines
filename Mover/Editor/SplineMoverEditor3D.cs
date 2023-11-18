@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(SplineMover))]
-public class SplineMoverEditor : Editor
+[CustomEditor(typeof(SplineMover3D))]
+public class SplineMoverEditor3D : Editor
 {
-    SplineMover _mover;
+    SplineMover3D _mover;
     SplineController _spline;
     Path _path;
 
@@ -13,7 +13,7 @@ public class SplineMoverEditor : Editor
     {
         try
         {
-            _mover = (SplineMover)target;
+            _mover = (SplineMover3D)target;
             _spline = _mover.splineController;
             _path = _spline.path;
 
@@ -35,12 +35,12 @@ public class SplineMoverEditor : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Path", EditorStyles.boldLabel);
-        PaintProgress(ref _mover.progess, _spline.path.NumSegments, "Progress");
+        PaintProgress(_mover.Progress, _spline.path.NumSegments, "Progress");
         PathButton();
          
     }
 
-    private void PaintProgress(ref float value, float max, string label)
+    private void PaintProgress(float value, float max, string label)
     {
         float prevValue = value;
         if (_path.IsClosed)
@@ -55,7 +55,7 @@ public class SplineMoverEditor : Editor
         }
 
         if (prevValue != value)
-            _mover.MoveTransformOnSpline(value);
+            _mover.MoveOnSpline(value, MoveMode.Transform);
     }
 
     private void PathButton()
@@ -91,7 +91,7 @@ public class SplineMoverEditor : Editor
         Matrix4x4 oldMatrix = Handles.matrix;
         Handles.matrix = _spline.transform.localToWorldMatrix;
 
-        _mover.MoveTransformOnSpline(_mover.progess);
+        _mover.MoveOnSpline(_mover.Progress, MoveMode.Transform);
         Draw();
 
         Handles.matrix = oldMatrix;

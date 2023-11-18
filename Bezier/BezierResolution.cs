@@ -1,8 +1,5 @@
-/// <summary>
-/// The resolution of the Bezier curve. 
-/// <br />
-/// Higher options are best for longer curves
-/// </summary>
+using System;
+[Obsolete]
 public enum BezierResolution
 {
     /// <summary>
@@ -24,5 +21,5 @@ public enum BezierResolution
     /// <summary>
     /// <b>EXPERIMENTAL</b> Automatically calculate the resolution fpr the curve
     /// </summary>
-    Auto = -1 //TODO: implementation
+    Auto = -1
 }

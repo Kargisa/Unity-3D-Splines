@@ -6,6 +6,7 @@ public static class Bezier
 {
     public static Vector3 QuadratcBezier(Vector3 p1, Vector3 p2, Vector3 p3, float t)
     {
+        t = Mathf.Clamp01(t);
 
         Vector3 a = Vector3.Lerp(p1, p2, t);
         Vector3 b = Vector3.Lerp(p2, p3, t);
@@ -14,8 +15,7 @@ public static class Bezier
     
     public static Vector3 CubicBezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, float t)
     {
-        if (t < 0 && t > 1)
-            throw new System.ArgumentException("t must be between 0 and 1", nameof(t));
+        t = Mathf.Clamp01(t);
 
         Vector3 a = QuadratcBezier(p1, p2, p3, t);
         Vector3 b = QuadratcBezier(p2, p3, p4, t);
@@ -82,9 +82,10 @@ public static class Bezier
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
     /// <param name="distance">The distnace from a <c>start</c> value T</param>
     /// <returns>The value T that is <c>length</c> away from <c>start</c></returns>
-    public static float GetTFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution, float start, float distance)
+    //TODO: Maby have option to give the length of the bezier to identify overlaps emediatly
+    public static float GetPointFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution, float start, float distance)
     {
-        int dir = float.IsNegative(distance) ? -1 : 1;
+        int dir = (int)Mathf.Sign(distance);
         start = Mathf.Clamp01(start);
         Vector3 previousPoint = CubicBezier(p1, p2, p3, p4, start);
         
@@ -114,9 +115,9 @@ public static class Bezier
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
     /// <param name="distance">The distnace from a <c>start</c> value T</param>
     /// <returns>The value T that is <c>length</c> away from <c>start</c></returns>
-    public static float GetTFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, int resolution, float start, float distance)
+    public static float GetPointFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, int resolution, float start, float distance)
     {
-        int dir = float.IsNegative(distance) ? -1 : 1;
+        int dir = (int)Mathf.Sign(distance);
         start = Mathf.Clamp01(start);
         Vector3 previousPoint = QuadratcBezier(p1, p2, p3, start);
 
@@ -146,12 +147,10 @@ public static class Bezier
     /// <param name="segmentLength">The distnace between two neighboring <c>T</c> values</param>
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
     /// <returns>All values <c>T</c> that are equally distaned from each other</returns>
-    public static float[] GetEqualDistancesT(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, float segmentLength, int resolution)
+    public static float[] GetEqualDistancePoints(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, float segmentLength, int resolution)
     {
-        if (segmentLength <= 0)
-            throw new System.ArgumentException("segmentLength must not be smaller than 0", nameof(segmentLength));
-        if (resolution <= 0)
-            throw new System.ArgumentException("resolution must not be smaller than 0", nameof(resolution));
+        segmentLength = Mathf.Max(segmentLength, 0f);
+        resolution = Mathf.Max(resolution, 0);
 
         float curveLength = EstimateCurveLength(p1, p2, p3, p4, resolution);
         int numPoints = Mathf.FloorToInt(curveLength / segmentLength);
@@ -186,7 +185,7 @@ public static class Bezier
     /// <param name="segmentLength">The distnace between two neighboring <c>T</c> values</param>
     /// <param name="resolution">the amount of divisions along the curve <c>[higher == more precision]</c></param>
     /// <returns>All values <c>T</c> that are equally distaned from each other</returns>
-    public static float[] GetEqualDistancesT(Vector3 p1, Vector3 p2, Vector3 p3, float segmentLength, int resolution)
+    public static float[] GetEqualDistancePoints(Vector3 p1, Vector3 p2, Vector3 p3, float segmentLength, int resolution)
     {
         segmentLength = Mathf.Max(segmentLength, 0f);
         resolution = Mathf.Max(resolution, 0);
