@@ -34,12 +34,13 @@ public class SplineMover3D : MonoBehaviour
     private bool _move = false;
     private MoveMode _moveMode;
     private float _progressToMoveTo = 0;
-    private float _unitsPerSecond = 1f;
+    private float _progressPerSecond = 1f;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+        rb.useGravity = false;
     }
 
     private void FixedUpdate()
@@ -48,7 +49,7 @@ public class SplineMover3D : MonoBehaviour
         {
             if (_progressToMoveTo > progress)
             {
-                progress += Time.fixedDeltaTime / _unitsPerSecond;
+                progress += Time.fixedDeltaTime / _progressPerSecond;
                 if (progress >= _progressToMoveTo)
                 {
                     _move = false;
@@ -57,7 +58,7 @@ public class SplineMover3D : MonoBehaviour
             }
             else
             {
-                progress -= Time.fixedDeltaTime / _unitsPerSecond;
+                progress -= Time.fixedDeltaTime / _progressPerSecond;
                 if (progress <= _progressToMoveTo)
                 {
                     _move = false;
@@ -70,8 +71,12 @@ public class SplineMover3D : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            MoveToNextSegment(2, MoveMode.Physics);
+        if (Input.GetKeyDown(KeyCode.P))
+            MoveToProgress(2, MoveMode.Physics, 2);
+        if (Input.GetKeyDown(KeyCode.S))
+            MoveToSegment(2, MoveMode.Physics, 2);
+        if (Input.GetKeyDown(KeyCode.R))
+            MoveToSegment(0, MoveMode.Physics, 0);
 
         //MoveWithVelocity(0.5f, MoveMode.Transform);
 
@@ -79,7 +84,7 @@ public class SplineMover3D : MonoBehaviour
         {
             if (_progressToMoveTo > progress)
             {
-                progress += Time.deltaTime / _unitsPerSecond;
+                progress += Time.deltaTime / _progressPerSecond;
                 if (progress >= _progressToMoveTo)
                 {
                     _move = false;
@@ -88,7 +93,7 @@ public class SplineMover3D : MonoBehaviour
             }
             else
             {
-                progress -= Time.deltaTime / _unitsPerSecond;
+                progress -= Time.deltaTime / _progressPerSecond;
                 if (progress <= _progressToMoveTo)
                 {
                     _move = false;
@@ -137,7 +142,7 @@ public class SplineMover3D : MonoBehaviour
         
         time = Mathf.Max(time, 0);
 
-        _unitsPerSecond = time / Mathf.Abs(progress - nextSegment);
+        _progressPerSecond = time / Mathf.Abs(progress - nextSegment);
         _move = true;
         _progressToMoveTo = nextSegment;
         _moveMode = mode;
@@ -156,7 +161,7 @@ public class SplineMover3D : MonoBehaviour
 
         time = Mathf.Max(time, 0);
 
-        _unitsPerSecond = time / Mathf.Abs(progress - segment);
+        _progressPerSecond = time / Mathf.Abs(progress - segment);
         _move = true;
         _progressToMoveTo = segment;
         _moveMode = mode;
@@ -175,7 +180,7 @@ public class SplineMover3D : MonoBehaviour
 
         time = Mathf.Max(time, 0);
 
-        _unitsPerSecond = time / Mathf.Abs(progress - t);
+        _progressPerSecond = time / Mathf.Abs(progress - t);
         _move = true;
         _progressToMoveTo = t;
         _moveMode = mode;
