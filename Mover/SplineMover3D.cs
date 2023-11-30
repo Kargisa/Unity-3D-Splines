@@ -15,8 +15,17 @@ public class SplineMover3D : MonoBehaviour
     private Rigidbody rb;
 
     public SplineController splineController;
-    
+
+    /// <summary>
+    /// Snap out of the splines path when colliding with something
+    /// </summary>
+    [SerializeField, HideInInspector] private bool snapOutOnCollision = true;
+
     [SerializeField, HideInInspector] private float progress = 0f;
+
+    float startTime = 0;
+    float endTime = 0;
+    bool stopWatch = true;
 
     public float Progress
     {
@@ -38,9 +47,12 @@ public class SplineMover3D : MonoBehaviour
 
     private void Start()
     {
+        startTime = Time.time;
         rb = GetComponent<Rigidbody>();
         rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
         rb.useGravity = false;
+        CubicBezier curve = splineController.path.GetBezierOfSegment(0);
+        Debug.Log(curve.Length);
     }
 
     private void FixedUpdate()
@@ -71,6 +83,13 @@ public class SplineMover3D : MonoBehaviour
 
     private void Update()
     {
+        if (progress == 1 && stopWatch)
+        {
+            endTime = Time.time;
+            Debug.Log(endTime - startTime);
+            stopWatch = false;
+        }
+
         if (Input.GetKeyDown(KeyCode.P))
             MoveToProgress(2, MoveMode.Physics, 2);
         if (Input.GetKeyDown(KeyCode.S))
@@ -78,7 +97,6 @@ public class SplineMover3D : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
             MoveToSegment(0, MoveMode.Physics, 0);
 
-        //MoveWithVelocity(0.5f, MoveMode.Transform);
 
         if (_move && _moveMode == MoveMode.Transform)
         {
@@ -139,7 +157,7 @@ public class SplineMover3D : MonoBehaviour
         int nextSegment = Mathf.FloorToInt(Mathf.Clamp(progress + 1, 0, splineController.path.NumSegments));
         if (nextSegment == progress)
             return;
-        
+
         time = Mathf.Max(time, 0);
 
         _progressPerSecond = time / Mathf.Abs(progress - nextSegment);
@@ -199,11 +217,16 @@ public class SplineMover3D : MonoBehaviour
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
 
+
         int currentSegment = Mathf.FloorToInt(progress) + (progress == splineController.path.NumSegments ? -1 : 0);
         CubicBezier bezier = splineController.path.GetBezierOfSegment(currentSegment);
         float segmentT = progress - currentSegment;
-
         float t = bezier.PointFromDistance(segmentT, velocity * delta) + currentSegment;
         MoveOnSpline(t, mode);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        Debug.Log(-rb.velocity.magnitude);
     }
 }
