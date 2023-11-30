@@ -12,7 +12,7 @@ public static class Bezier
         Vector3 b = Vector3.Lerp(p2, p3, t);
         return Vector3.Lerp(a, b, t);
     }
-    
+
     public static Vector3 CubicBezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, float t)
     {
         t = Mathf.Clamp01(t);
@@ -83,18 +83,19 @@ public static class Bezier
     /// <param name="distance">The distnace from a <c>start</c> value T</param>
     /// <returns>The value T that is <c>length</c> away from <c>start</c></returns>
     //TODO: Maby have option to give the length of the bezier to identify overlaps emediatly
+    //TODO: Very small distances are inaccurate
     public static float GetPointFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution, float start, float distance)
     {
         int dir = (int)Mathf.Sign(distance);
         start = Mathf.Clamp01(start);
         Vector3 previousPoint = CubicBezier(p1, p2, p3, p4, start);
-        
+
         float currentLength = 0;
         int currentSegment = 0;
         while (currentLength < Mathf.Abs(distance) && currentSegment < resolution)
         {
             float t = (float)currentSegment / resolution * dir + start;
-            if (t >= 1)
+            if (t > 1 || t < 0)
                 return Mathf.Clamp01(t);
             Vector3 currentPoint = CubicBezier(p1, p2, p3, p4, t);
             currentLength += Vector3.Distance(previousPoint, currentPoint);
@@ -126,7 +127,7 @@ public static class Bezier
         while (currentLength < Mathf.Abs(distance) && currentSegment < resolution)
         {
             float t = (float)currentSegment / resolution * dir + start;
-            if (t >= 1)
+            if (t > 1 || t < 0)
                 return Mathf.Clamp01(t);
             Vector3 currentPoint = QuadratcBezier(p1, p2, p3, t);
             currentLength += Vector3.Distance(previousPoint, currentPoint);
@@ -171,7 +172,7 @@ public static class Bezier
                 previousPoint = currentPoint;
                 currentSegment++;
             }
-            ts[i-1] = (float)(currentSegment - 1) / resolution;
+            ts[i - 1] = (float)(currentSegment - 1) / resolution;
         }
         return ts;
     }

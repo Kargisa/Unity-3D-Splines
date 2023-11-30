@@ -1,9 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
-using UnityEditor.ShaderGraph;
 using UnityEngine;
-using UnityEngine.Splines;
 
 public struct CubicBezier : IBezier, IBezierAuto
 {
@@ -39,7 +37,7 @@ public struct CubicBezier : IBezier, IBezierAuto
 
     public Vector3 this[int i]
     {
-        get 
+        get
         {
             return i switch
             {
@@ -88,14 +86,24 @@ public struct CubicBezier : IBezier, IBezierAuto
 
     public readonly float PointFromDistance(float start, float distance)
     {
-        float resolution = distance * ResPerMeter;
-        return PointFromDistance((int)resolution, start, distance);
+        int resolution;
+        if (distance < 1)
+            resolution = Mathf.CeilToInt(1 / distance * ResPerMeter);
+        else
+            resolution = Mathf.CeilToInt(distance * ResPerMeter);
+        
+        return PointFromDistance(resolution, start, distance);
 
     }
 
     public readonly float[] EqualDistancesT(float distance)
     {
-        float resolution = FastLengthEstimation() * ResPerMeter;
-        return EqualDistancePoints(distance, (int)resolution);
+        int resolution;
+        float fastLength = FastLengthEstimation();
+        if (fastLength < 1)
+            resolution = Mathf.CeilToInt(1 / fastLength * ResPerMeter);
+        else
+            resolution = Mathf.CeilToInt(fastLength * ResPerMeter);
+        return EqualDistancePoints(distance, resolution);
     }
 }
