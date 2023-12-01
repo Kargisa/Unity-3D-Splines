@@ -83,7 +83,6 @@ public static class Bezier
     /// <param name="distance">The distnace from a <c>start</c> value T</param>
     /// <returns>The value T that is <c>length</c> away from <c>start</c></returns>
     //TODO: Maby have option to give the length of the bezier to identify overlaps emediatly
-    //TODO: Very small distances are inaccurate
     public static float GetPointFromDistance(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, int resolution, float start, float distance)
     {
         int dir = (int)Mathf.Sign(distance);

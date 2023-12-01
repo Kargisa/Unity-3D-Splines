@@ -7,13 +7,6 @@ public interface IBezier
     /// <summary>
     /// Calculates the estiamted length of the Bezier
     /// </summary>
-    /// <param name="resolution">resolution for the calculation</param>
-    /// <returns>Estimated length of Bezier</returns>
-    //public float GetEstimatedLength(BezierResolution resolution);
-
-    /// <summary>
-    /// Calculates the estiamted length of the Bezier
-    /// </summary>
     /// <param name="resolution">custom resolution for the calculation</param>
     /// <returns>Estimated length of Bezier</returns>
     public float GetEstimatedLength(int resolution);

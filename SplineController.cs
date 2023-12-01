@@ -33,7 +33,7 @@ public class SplineController : MonoBehaviour
     //}
 
     /// <summary>
-    /// Creates an new path at 0,0,0 in local space
+    /// Creates an new path at (0, 0, 0) in local space
     /// </summary>
     public void CreatePath()
     {
