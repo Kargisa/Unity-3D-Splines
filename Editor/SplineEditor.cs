@@ -1,3 +1,4 @@
+using log4net.Filter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -260,11 +261,13 @@ public class SplineEditor : Editor
 
     private void OnSceneGUI()
     {
+        //Save the old matrix
         Matrix4x4 originalMatrix = Handles.matrix;
-
+        //Set Handles.matrix to the localToWorldMatrix to enable to draw the spline in relation to the spline object
         Handles.matrix = _spline.transform.localToWorldMatrix;
-        Input();
+        Input(); //Input befor Draw
         Draw(_spline.isRotate);
+        //Reinstantiate the old matrix
         Handles.matrix = originalMatrix;
     }
 
@@ -324,19 +327,20 @@ public class SplineEditor : Editor
             _path.InsertSegment(_selectedSegment, _mousePosOnPlane);
         }
 
+        //TODO: remove or make better
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.shift && SceneView.lastActiveSceneView.in2DMode)
         {
             Undo.RecordObject(_spline, "Add Segment");
             _path.AddSegment(mousPos, Quaternion.identity);
         }
 
-        if (guiEvent.type == EventType.MouseDown && guiEvent.button == 1)
+        if (guiEvent.type == EventType.MouseDown && guiEvent.button == 1 && guiEvent.control)
         {
             float distToAnchor = 0.05f;
             int closestAnchorIndex = -1;
             for (int i = 0; i < _path.NumPoints; i++)
             {
-                float dist = DistFromCircle(r, _path[i]);
+                float dist = DistFromPoint(r, _spline.transform.TransformPoint(_path[i]));
                 if (dist < distToAnchor)
                 {
                     distToAnchor = dist;
@@ -346,7 +350,7 @@ public class SplineEditor : Editor
             if (closestAnchorIndex != -1)
             {
                 Undo.RecordObject(_spline, "Remove Segment");
-                _path.DeletePoint(closestAnchorIndex);
+                _path.DeleteSegment(closestAnchorIndex);
             }
         }
     }
@@ -439,7 +443,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private float DistFromCircle(Ray r, Vector3 cPos)
+    private float DistFromPoint(Ray r, Vector3 cPos)
     {
         float lambd = -((((r.origin.x - cPos.x) * r.direction.x) + ((r.origin.y - cPos.y) * r.direction.y) + ((r.origin.z - cPos.z) * r.direction.z)) / (Mathf.Pow(r.direction.x, 2) + Mathf.Pow(r.direction.y, 2) + Mathf.Pow(r.direction.z, 2)));
         float dist = Mathf.Sqrt(Mathf.Pow(r.origin.x + lambd * r.direction.x - cPos.x, 2) + Mathf.Pow(r.origin.y + lambd * r.direction.y - cPos.y, 2) + Mathf.Pow(r.origin.z + lambd * r.direction.z - cPos.z, 2));

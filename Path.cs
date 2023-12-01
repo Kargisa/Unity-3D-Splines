@@ -2,7 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
+/// <summary>
+/// Defines a path for a spline in <b>local space</b>
+/// </summary>
 [System.Serializable]
 public class Path
 {
@@ -48,14 +52,22 @@ public class Path
         set { points[i] = value; }
     }
 
+    public float Length { get => GetLength(); }
+
     public int NumPoints { get => points.Count; }
 
     public int NumSegments { get => points.Count / 3; }
 
     public int NumRotations { get => rotations.Count; }
 
+    /// <summary>
+    /// Checks if points are null
+    /// </summary>
     public bool IsNull { get => points == null; }
 
+    /// <summary>
+    /// The last added checkpoint
+    /// </summary>
     public PathCheckpoint LastCheckPoint { get => checkpoints[^1]; }
 
     public bool Is2D
@@ -80,12 +92,17 @@ public class Path
         set { isClosed = value; }
     }
 
+    /// <summary>
+    /// Gets the quaternion at index i
+    /// </summary>
+    /// <param name="i">Index of the quaternion</param>
     public Quaternion GetRotation(int i) => rotations[LoopRotationsIndex(i)];
 
     /// <summary>
-    /// Adds a new Segment at the point
+    /// Adds a new segment at the point
     /// </summary>
-    /// <param name="point">Position of the Segment</param>
+    /// <param name="point">Position of the segment</param>
+    /// <param name="rotation">Rotation of the segment</param>
     public void AddSegment(Vector3 point, Quaternion rotation)
     {
         if (Is2D)
@@ -104,7 +121,7 @@ public class Path
     }
 
     /// <summary>
-    /// Adds a new Segement with an offset of half the distance of the last Segment
+    /// Adds a new segement with an offset of half the distance to the last Segment
     /// </summary>
     public void AddSegment()
     {
@@ -112,6 +129,11 @@ public class Path
         AddSegment(newPoint, Quaternion.identity);
     }
 
+    /// <summary>
+    /// Insert a new segment at the index i and the position ps
+    /// </summary>
+    /// <param name="i">Index of the new segment</param>
+    /// <param name="pos">Position of the new anchor of the segment</param>
     public void InsertSegment(int i, Vector3 pos)
     {
         int index = i * 3 + 2;
@@ -122,7 +144,11 @@ public class Path
         rotations.Insert(i + 1, Quaternion.Slerp(rotations[i], rotations[LoopRotationsIndex(i + 1)], 0.5f));
     }
 
-    public void DeletePoint(int i)
+    /// <summary>
+    /// Deletes the segment at index i
+    /// </summary>
+    /// <param name="i">Index of the segment to delete</param>
+    public void DeleteSegment(int i)
     {
         if (i % 3 != 0)
             return;
@@ -145,6 +171,9 @@ public class Path
         rotations.RemoveAt(i/3);
     }
 
+    /// <summary>
+    /// Loads the last checkpoint created
+    /// </summary>
     public void LoadLastCheckpoint()
     {
         points = LastCheckPoint.points.ToList();
@@ -153,11 +182,18 @@ public class Path
         is2D = LastCheckPoint.is2D;
     }
 
+    /// <summary>
+    /// Creates a new checkpoint with the current values
+    /// </summary>
     public void CreateCheckpoint()
     {
         checkpoints.Add(new PathCheckpoint(points.ToList(), rotations.ToList(), isClosed, is2D));
     }
 
+    /// <summary>
+    /// Deletes the last checkpoint created
+    /// </summary>
+    /// <returns>success or fail (eg. delete last checkpoint = fail)</returns>
     public bool DeleteCheckpoint()
     {
         if (checkpoints.Count - 1 <= 0)
@@ -166,8 +202,15 @@ public class Path
         return true;
     }
 
+    /// <summary>
+    /// Gets the cubic bezier of the segment at the index i
+    /// </summary>
+    /// <param name="index">index of the segment</param>
     public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopPointsIndex(index * 3 + 3)], rotations[index], rotations[LoopRotationsIndex(index + 1)]);
 
+    /// <summary>
+    /// Toggles path open and closed
+    /// </summary>
     public void ToggleClosed()
     {
         if (isClosed)
@@ -195,6 +238,11 @@ public class Path
 
     private int LoopRotationsIndex(int i) => IndexHelper.LoopIndex(i, rotations.Count);
 
+    /// <summary>
+    /// Moves the point at index i to the position pos
+    /// </summary>
+    /// <param name="i">Index of the point</param>
+    /// <param name="pos">Position to move the point to</param>
     public void MovePoint(int i, Vector3 pos)
     {
         Vector3 deltaMove = pos - points[i];
@@ -227,9 +275,26 @@ public class Path
         }
     }
 
+    /// <summary>
+    /// Rotates the point at index i to the Quaternion rotation
+    /// </summary>
+    /// <param name="i">Index of the point</param>
+    /// <param name="rotation">Quaternion to rotate to</param>
     public void RotatePoint(int i, Quaternion rotation)
     {
         rotations[i] = rotation;
+    }
+
+    /// <returns>Length of the path</returns>
+    public float GetLength()
+    {
+        float length = 0;
+        for (int i = 0; i < NumSegments; i++)
+        {
+            CubicBezier b = GetBezierOfSegment(i);
+            length += b.Length;
+        }
+        return length;
     }
 
     public override string ToString()

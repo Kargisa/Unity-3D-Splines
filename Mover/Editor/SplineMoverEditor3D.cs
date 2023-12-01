@@ -35,12 +35,15 @@ public class SplineMoverEditor3D : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Path", EditorStyles.boldLabel);
-        PaintProgress(_mover.Progress, _spline.path.NumSegments, "Progress");
+        DrawProgress(_mover.Progress, _spline.path.NumSegments, "Progress");
         PathButton();
          
     }
 
-    private void PaintProgress(float value, float max, string label)
+    /// <summary>
+    /// Draws the progress slider
+    /// </summary>
+    private void DrawProgress(float value, float max, string label)
     {
         float prevValue = value;
         if (_path.IsClosed)
@@ -58,6 +61,9 @@ public class SplineMoverEditor3D : Editor
             _mover.MoveOnSpline(value, MoveMode.Transform);
     }
 
+    /// <summary>
+    /// Draws the button that toggles the path
+    /// </summary>
     private void PathButton()
     {
         if (GUILayout.Button("Toggle Path"))
@@ -67,6 +73,9 @@ public class SplineMoverEditor3D : Editor
         }
     }
 
+    /// <summary>
+    /// Checks if the splineMover has all the required props
+    /// </summary>
     private bool NotNullProps()
     {
         if (_spline == null && _mover.splineController != null)
@@ -88,12 +97,16 @@ public class SplineMoverEditor3D : Editor
         if (_spline == null)
             return;
 
+        //Save the old matrix
         Matrix4x4 oldMatrix = Handles.matrix;
+        //Set Handles.matrix to the localToWorldMatrix to enable to draw the spline in relation to the spline object
         Handles.matrix = _spline.transform.localToWorldMatrix;
 
-        _mover.MoveOnSpline(_mover.Progress, MoveMode.Transform);
+        if (!Application.isPlaying)
+            _mover.MoveOnSpline(_mover.Progress, MoveMode.Transform);
         Draw();
 
+        //Reinstantiate the old matrix
         Handles.matrix = oldMatrix;
     }
 
