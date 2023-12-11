@@ -29,26 +29,46 @@ public class SplineEditor : Editor
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
+        DrawOpenDocsButton();
+
         EditorGUILayout.Space();
-        ChangeTo2D();
-        ToggleMoveButton();
+
+        DrawToggleTo2D();
+        DrawToggleMoveButton();
         if (_spline.isRotate) DrawRotations(ref _spline.rotationsFoldOut);
         else DrawPath(ref _spline.pathFoldOut);
+
         EditorGUILayout.Space();
-        AddSegmentButton();
-        ClosePath();
+
+        DrawAddSegmentButton();
+        DrawClosePathToggle();
+
         EditorGUILayout.Space();
-        CreateCheckpoint();
-        LoadCheckpoint();
-        DeleteCheckpoint();
+
+        DrawCreateCheckpointButton();
+        DrawLoadCheckpointButton();
+        DrawDeleteCheckpointButton();
+
         EditorGUILayout.Space();
+
         DrawSplineCustomizer();
+
         EditorGUILayout.Space();
+
         Info(ref _spline.infoFoldOut);
 
     }
 
-    private void ChangeTo2D()
+    private void DrawOpenDocsButton()
+    {
+        EditorGUILayout.BeginHorizontal();
+        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Open Docs", EditorStyles.miniButtonRight, GUILayout.Width(80)))
+            Application.OpenURL("http://poi-desk.at");
+        EditorGUILayout.EndHorizontal();
+    }
+
+    private void DrawToggleTo2D()
     {
         Undo.RecordObject(_spline, "Dimenson Change");
         bool change = EditorGUILayout.Toggle("2D Spline", _path.Is2D);
@@ -67,7 +87,7 @@ public class SplineEditor : Editor
         GUI.enabled = true;
     }
 
-    private void AddSegmentButton()
+    private void DrawAddSegmentButton()
     {
         if (GUILayout.Button("Add Segment"))
         {
@@ -77,7 +97,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private void ToggleMoveButton()
+    private void DrawToggleMoveButton()
     {
         if (GUILayout.Button($"{(_spline.isRotate ? "Toggle to move" : "Toggle to rotate")}"))
         {
@@ -86,7 +106,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private void ClosePath()
+    private void DrawClosePathToggle()
     {
         if (GUILayout.Button("Toggle Close"))
         {
@@ -96,7 +116,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private void LoadCheckpoint()
+    private void DrawLoadCheckpointButton()
     {
         if (GUILayout.Button("Load Checkpoint"))
         {
@@ -109,7 +129,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private void CreateCheckpoint()
+    private void DrawCreateCheckpointButton()
     {
         if (GUILayout.Button("Create Checkpoint"))
         {
@@ -119,7 +139,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private void DeleteCheckpoint()
+    private void DrawDeleteCheckpointButton()
     {
         if (GUILayout.Button("Delete Checkpoint"))
         {
@@ -143,7 +163,10 @@ public class SplineEditor : Editor
         EditorGUI.indentLevel++;
         for (int i = 0; i < _path.NumPoints; i++)
         {
-            _path.MovePoint(i, EditorGUILayout.Vector3Field($"{(i % 3 == 0 ? $"Anchor {i / 3}" : $"Con {i}")}", _path[i]));
+            Vector3 oldPos = _path[i];
+            Vector3 pos = EditorGUILayout.Vector3Field($"{(i % 3 == 0 ? $"Anchor {i / 3}" : $"Con {i}")}", _path[i]);
+            if (pos != oldPos)
+                _path.MovePoint(i, pos);
         }
         EditorGUI.indentLevel--;
         SceneView.RepaintAll();
@@ -158,8 +181,10 @@ public class SplineEditor : Editor
         EditorGUI.indentLevel++;
         for (int i = 0; i < _path.NumRotations; i++)
         {
+            Vector3 oldRot = _path.GetRotation(i).eulerAngles;
             Vector3 rot = EditorGUILayout.Vector3Field($"Rot {i}", _path.GetRotation(i).eulerAngles);
-            _path.RotatePoint(i, Quaternion.Euler(new Vector3((float)Math.Round(rot.x, 2), (float)Math.Round(rot.y, 2), (float)Math.Round(rot.z, 2))));
+            if (rot != oldRot)
+                _path.RotatePoint(i, Quaternion.Euler(new Vector3((float)Math.Round(rot.x, 2), (float)Math.Round(rot.y, 2), (float)Math.Round(rot.z, 2))));
         }
         EditorGUI.indentLevel--;
         SceneView.RepaintAll();
@@ -172,6 +197,7 @@ public class SplineEditor : Editor
             return;
 
         EditorGUI.indentLevel++;
+
         _spline.custom.splineColor = EditorGUILayout.ColorField("Spline Color", _spline.custom.splineColor);
         _spline.custom.selectedColor = EditorGUILayout.ColorField("Selected Color", _spline.custom.selectedColor);
         _spline.custom.connectionColor = EditorGUILayout.ColorField("Connection Color", _spline.custom.connectionColor);
@@ -183,23 +209,19 @@ public class SplineEditor : Editor
 
         EditorGUILayout.Space();
 
-        //TODO: arrows by distance
-        //_spline.custom.arrowDistributionByDistance = EditorGUILayout.Toggle("Arrow Distribution By Distance", _spline.custom.arrowDistributionByDistance);
-        //bool isDist = _spline.custom.arrowDistributionByDistance;
+        _spline.custom.alwaysShowArrows = EditorGUILayout.Toggle("Always Show Arrows", _spline.custom.alwaysShowArrows);
+
+        _spline.custom.useArrowDistanceDistribution = EditorGUILayout.Toggle("Arrow Distance Distribution", _spline.custom.useArrowDistanceDistribution);
+
+        EditorGUILayout.Space();
 
         _spline.custom.arrowLength = EditorGUILayout.Slider("Arrow Length", _spline.custom.arrowLength, 0, 1f);
 
-        //INFO: temporarily disabled
-        if (false)
-        {
-            int clampedRes = _spline.custom.arrowResolution < 1 ? 1 : _spline.custom.arrowResolution;
-            _spline.custom.arrowResolution = EditorGUILayout.IntField("Arrow Resolution", clampedRes);
-            _spline.custom.arrowDistance = EditorGUILayout.Slider("Distance", _spline.custom.arrowDistance, 0f, 1f);
-        }
+        if (_spline.custom.useArrowDistanceDistribution)
+            _spline.custom.arrowDistance = EditorGUILayout.Slider("Arrow Distance", _spline.custom.arrowDistance, 0.1f, 1);
         else
-        {
             _spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", _spline.custom.arrowDistribution, 1, 250);
-        }
+
         EditorGUI.indentLevel--;
 
         SceneView.RepaintAll();
@@ -263,10 +285,13 @@ public class SplineEditor : Editor
     {
         //Save the old matrix
         Matrix4x4 originalMatrix = Handles.matrix;
+
         //Set Handles.matrix to the localToWorldMatrix to enable to draw the spline in relation to the spline object
         Handles.matrix = _spline.transform.localToWorldMatrix;
+
         Input(); //Input befor Draw
         Draw(_spline.isRotate);
+
         //Reinstantiate the old matrix
         Handles.matrix = originalMatrix;
     }
@@ -286,7 +311,8 @@ public class SplineEditor : Editor
             for (int i = 0; i < _path.NumSegments; i++)
             {
                 CubicBezier localBezier = _path.GetBezierOfSegment(i);
-                CubicBezier bezier = new CubicBezier();
+                // beziere in world space (no rotations)
+                CubicBezier bezier = new();
                 for (int j = 0; j < 4; j++)
                 {
                     bezier[j] = _spline.transform.TransformPoint(localBezier[j]);
@@ -321,13 +347,13 @@ public class SplineEditor : Editor
             }
         }
 
-        if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1)
+        if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1 && _path.Is2D)
         {
             Undo.RecordObject(_spline, "Insert Segment");
-            _path.InsertSegment(_selectedSegment, _mousePosOnPlane);
+            _path.InsertSegment(_selectedSegment, _spline.transform.InverseTransformPoint(_mousePosOnPlane));
         }
 
-        //TODO: remove or make better
+        //TODO: remove or make better for 3D
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.shift && SceneView.lastActiveSceneView.in2DMode)
         {
             Undo.RecordObject(_spline, "Add Segment");
@@ -389,10 +415,13 @@ public class SplineEditor : Editor
             if (newPos == _path[i])
                 continue;
 
-            Undo.RecordObject(_spline, "Move Point");
+            Undo.RecordObject(_spline, "Move Point Scene");
             _path.MovePoint(i, newPos);
 
         }
+
+        if (_spline.custom.alwaysShowArrows)
+            DrawRotationArrows();
     }
 
     private void DrawRotation()
@@ -406,39 +435,41 @@ public class SplineEditor : Editor
 
             if (newQuat == _path.GetRotation(i))
                 continue;
-            Undo.RecordObject(_spline, "Rotate Point");
+            Undo.RecordObject(_spline, "Rotate Point Scene");
             _path.RotatePoint(i, newQuat);
         }
 
+        DrawRotationArrows();
 
+    }
+
+    private void DrawRotationArrows()
+    {
         Handles.color = _spline.custom.arrowColor;
 
-        if (_spline.custom.arrowDistributionByDistance)
+        if (_spline.custom.useArrowDistanceDistribution)
         {
-            //TODO: arrows by distance
-
-            //for (int i = 0; i < _path.NumDistancesT; i++)
-            //{
-            //    float[] distancesT = _path.GetDistancesT(i);
-            //    for (int j = 0; j < distancesT.Length; j++)
-            //    {
-            //        Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
-            //        Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
-            //        Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
-            //    }
-            //}
-        }
-        else
-        {
-            float arrowsDistribution = _spline.custom.arrowDistribution;
-            for (int j = 0; j < _path.NumSegments; j++)
+            float distance = _spline.custom.arrowDistance;
+            for (int i = 0; i < _path.NumSegments; i++)
             {
-                for (int i = 0; i < arrowsDistribution; i++)
+                float[] p = _path.GetBezierOfSegment(i).EqualDistancePoints(distance);
+                for (int j = 0; j < p.Length; j++)
                 {
-                    Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
-                    Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
+                    Quaternion rot = _spline.CalculateRotation(i + p[j]);
+                    Vector3 pos = _spline.CalculatePosition(i + p[j]);
                     Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
                 }
+            }
+            return;
+        }
+        float arrowsDistribution = _spline.custom.arrowDistribution;
+        for (int j = 0; j < _path.NumSegments; j++)
+        {
+            for (int i = 0; i < arrowsDistribution; i++)
+            {
+                Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
+                Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
+                Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
         }
     }

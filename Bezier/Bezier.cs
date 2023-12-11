@@ -156,6 +156,11 @@ public static class Bezier
         int numPoints = Mathf.FloorToInt(curveLength / segmentLength);
         float[] ts = new float[numPoints];
 
+        // INFO: Performace is worse with this:
+        // ------------------------------
+        resolution *= numPoints;
+        // ------------------------------
+
         int currentSegment = 0;
         float currentLength = 0f;
         Vector3 previousPoint = p1;

@@ -15,13 +15,10 @@ public class SplineCustomizer
     public Color arrowColor = Color.black;
 
     public float arrowLength = 0.1f;
+    public bool alwaysShowArrows = false;
 
-    public bool arrowDistributionByDistance = false;
+    public bool useArrowDistanceDistribution = false;
 
-    //normal distribution
     public int arrowDistribution = 40;
-
-    //distribution by distance
-    public int arrowResolution = 5000;
-    public float arrowDistance = 0.05f;
+    public float arrowDistance = 0.1f;
 }
