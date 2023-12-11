@@ -223,7 +223,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 163899749}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1, y: 0, z: 2.712}
+  m_LocalPosition: {x: -1.6430368, y: 0.07455498, z: 2.712}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -404,7 +404,6 @@ GameObject:
   - component: {fileID: 453651858}
   - component: {fileID: 453651857}
   - component: {fileID: 453651862}
-  - component: {fileID: 453651861}
   m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
@@ -498,18 +497,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &453651861
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 453651856}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad76ee8dca6023448af3ffa68dd95180, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!54 &453651862
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -718,7 +705,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bad63f5f33f40c489063026d0793f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathFoldOut: 1
+  pathFoldOut: 0
   rotationsFoldOut: 1
   infoFoldOut: 0
   checkpointsFoldOut: 0
@@ -731,33 +718,29 @@ MonoBehaviour:
     controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     arrowColor: {r: 0, g: 0, b: 0, a: 1}
     arrowLength: 0.1
-    arrowDistributionByDistance: 0
+    alwaysShowArrows: 0
+    useArrowDistanceDistribution: 1
     arrowDistribution: 25
-    arrowResolution: 5000
-    arrowDistance: 0.05
+    arrowDistance: 0.1
   customizerFoldOut: 1
   path:
     points:
-    - {x: -1, y: 0, z: 0}
-    - {x: -1.0874234, y: 0.7002654, z: 0}
-    - {x: -0.9691208, y: 1.1717799, z: 0}
-    - {x: -0.62196285, y: 1.2229885, z: 0}
-    - {x: -0.2748049, y: 1.2741971, z: 0}
-    - {x: -0.2859041, y: 0.9827241, z: 0}
-    - {x: 0.11808616, y: 1.1913333, z: 0}
-    - {x: 0.5220764, y: 1.3999425, z: 0}
-    - {x: 0.21818131, y: 0.3214051, z: 0}
-    - {x: 0.4819982, y: 0.38567418, z: 0}
-    - {x: 0.7458151, y: 0.44994324, z: 0}
-    - {x: 0.6073072, y: 0.7476219, z: 0}
-    - {x: 0.84124875, y: 0.8023475, z: 0}
-    - {x: 1.0751903, y: 0.85707307, z: 0}
-    - {x: 1.4451342, y: 0.82568926, z: 0}
-    - {x: 2.003557, y: 0.1481219, z: 0}
+    - {x: -1.7641888, y: 0.027958155, z: 0}
+    - {x: -2.2777927, y: 0.7872317, z: 0}
+    - {x: -1.6929837, y: 1.4012747, z: 0}
+    - {x: -0.996768, y: 1.3978124, z: 0}
+    - {x: -0.30055225, y: 1.39435, z: 0}
+    - {x: -0.42485595, y: -0.0047730803, z: 0}
+    - {x: 0.4913175, y: 0.0035799146, z: 0}
+    - {x: 1.407491, y: 0.0119329095, z: 0}
+    - {x: 1.2317053, y: 1.3906586, z: 0}
+    - {x: 2.0154903, y: 1.4267457, z: 0}
+    - {x: 2.7992752, y: 1.4628327, z: 0}
+    - {x: 3.2996895, y: 0.7418147, z: 0}
+    - {x: 2.7118297, y: 0.08288622, z: 0}
     rotations:
     - {x: 0, y: 0, z: 0, w: 1}
-    - {x: 0, y: 0, z: 0, w: 1}
-    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: -0.10135169, y: 0, z: 0, w: 0.99485064}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}

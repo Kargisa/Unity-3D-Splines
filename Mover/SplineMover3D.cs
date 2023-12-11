@@ -29,10 +29,7 @@ public class SplineMover3D : MonoBehaviour
 
     public float Progress
     {
-        get
-        {
-            return progress;
-        }
+        get => progress;
         set
         {
             progress = value;
@@ -51,8 +48,6 @@ public class SplineMover3D : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
         rb.useGravity = false;
-        CubicBezier curve = splineController.path.GetBezierOfSegment(0);
-        Debug.Log(curve.Length);
     }
 
     private void FixedUpdate()
@@ -83,6 +78,9 @@ public class SplineMover3D : MonoBehaviour
 
     private void Update()
     {
+
+        // INFO: Test
+        // ------------------------------------------
         if (progress == 1 && stopWatch)
         {
             endTime = Time.time;
@@ -91,12 +89,12 @@ public class SplineMover3D : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.P))
-            MoveToProgress(2, MoveMode.Physics, 2);
+            MoveToProgress(2, MoveMode.Physics, 5);
         if (Input.GetKeyDown(KeyCode.S))
             MoveToSegment(2, MoveMode.Physics, 2);
         if (Input.GetKeyDown(KeyCode.R))
             MoveToSegment(0, MoveMode.Physics, 0);
-
+        // ------------------------------------------
 
         if (_move && _moveMode == MoveMode.Transform)
         {
@@ -186,7 +184,7 @@ public class SplineMover3D : MonoBehaviour
     }
 
     /// <summary>
-    /// Moves the transform to the given progress t
+    /// Moves the gameObject to the given progress t
     /// </summary>
     /// <param name="t">progress clamped between <c>[0 and NumSegments]</c></param>
     /// <param name="time">time it takes to move to t</param>
@@ -205,7 +203,7 @@ public class SplineMover3D : MonoBehaviour
     }
 
     /// <summary>
-    /// Moves the transform on the spline with a certain velocity
+    /// Moves the gameObject on the spline with the given velocity
     /// </summary>
     /// <param name="velocity">velocity in <c>units/s</c></param>
     public void MoveWithVelocity(float velocity, MoveMode mode)

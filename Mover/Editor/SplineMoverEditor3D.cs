@@ -37,7 +37,7 @@ public class SplineMoverEditor3D : Editor
         EditorGUILayout.LabelField("Path", EditorStyles.boldLabel);
         DrawProgress(_mover.Progress, _spline.path.NumSegments, "Progress");
         PathButton();
-         
+
     }
 
     /// <summary>
@@ -74,7 +74,7 @@ public class SplineMoverEditor3D : Editor
     }
 
     /// <summary>
-    /// Checks if the splineMover has all the required props
+    /// Checks if the splineMover has all the required props set
     /// </summary>
     private bool NotNullProps()
     {
@@ -99,11 +99,12 @@ public class SplineMoverEditor3D : Editor
 
         //Save the old matrix
         Matrix4x4 oldMatrix = Handles.matrix;
-        //Set Handles.matrix to the localToWorldMatrix to enable to draw the spline in relation to the spline object
+        //Set Handles.matrix to the localToWorldMatrix to enable drawing the spline in relation to the spline object
         Handles.matrix = _spline.transform.localToWorldMatrix;
 
         if (!Application.isPlaying)
             _mover.MoveOnSpline(_mover.Progress, MoveMode.Transform);
+
         Draw();
 
         //Reinstantiate the old matrix
@@ -126,32 +127,15 @@ public class SplineMoverEditor3D : Editor
     private void DrawRotation()
     {
         Handles.color = _spline.custom.arrowColor;
-        if (_spline.custom.arrowDistributionByDistance)
-        {
-            //TODO: arrwos by distance
 
-            //for (int i = 0; i < _path.NumDistancesT; i++)
-            //{
-            //    float[] distancesT = _path.GetDistancesT(i);
-            //    for (int j = 0; j < distancesT.Length; j++)
-            //    {
-            //        Quaternion rot = _spline.CalculateRotation(i + distancesT[j]);
-            //        Vector3 pos = _spline.CalculatePosition(i + distancesT[j]);
-            //        Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
-            //    }
-            //}
-        }
-        else
+        float arrowsDistribution = _spline.custom.arrowDistribution;
+        for (int j = 0; j < _path.NumSegments; j++)
         {
-            float arrowsDistribution = _spline.custom.arrowDistribution;
-            for (int j = 0; j < _path.NumSegments; j++)
+            for (int i = 0; i < arrowsDistribution; i++)
             {
-                for (int i = 0; i < arrowsDistribution; i++)
-                {
-                    Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
-                    Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
-                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
-                }
+                Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
+                Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
+                Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
         }
 

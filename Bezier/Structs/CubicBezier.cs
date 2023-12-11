@@ -12,7 +12,7 @@ public struct CubicBezier : IBezier, IBezierAuto
     public Quaternion r1 { get; set; }
     public Quaternion r2 { get; set; }
     public readonly float Length { get => GetEstimatedLength(); }
-    public readonly int ResPerMeter => 1000;
+    public readonly int ResPerMeter => 100;
 
 
     public CubicBezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, Quaternion r1, Quaternion r2)
@@ -96,7 +96,7 @@ public struct CubicBezier : IBezier, IBezierAuto
 
     }
 
-    public readonly float[] EqualDistancesT(float distance)
+    public readonly float[] EqualDistancePoints(float distance)
     {
         int resolution;
         float fastLength = FastLengthEstimation();

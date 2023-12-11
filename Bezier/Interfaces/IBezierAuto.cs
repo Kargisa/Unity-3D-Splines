@@ -34,5 +34,5 @@ public interface IBezierAuto
     /// </summary>
     /// <param name="distance">distance between each point</param>
     /// <returns>all points with <c>distance</c> apart </returns>
-    public float[] EqualDistancesT(float distance);
+    public float[] EqualDistancePoints(float distance);
 }
