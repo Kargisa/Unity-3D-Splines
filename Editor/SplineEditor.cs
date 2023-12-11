@@ -2,6 +2,7 @@ using log4net.Filter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -17,6 +18,8 @@ public class SplineEditor : Editor
 
     int _selectedSegment = -1;
     Vector3 _mousePosOnPlane = Vector3.zero;
+    private List<List<float>> _bufferedArrowDistribution = new();
+
 
     private void OnEnable()
     {
@@ -24,6 +27,13 @@ public class SplineEditor : Editor
         if (_spline.path.IsNull)
             _spline.CreatePath();
         _path = _spline.path;
+        RecalculateArrowBuffer();
+        Undo.undoRedoPerformed += RecalculateArrowBuffer;
+    }
+
+    private void OnDisable()
+    {
+        Undo.undoRedoPerformed -= RecalculateArrowBuffer;
     }
 
     public override void OnInspectorGUI()
@@ -196,31 +206,37 @@ public class SplineEditor : Editor
         if (!_spline.customizerFoldOut)
             return;
 
+        SplineCustomizer custom = _spline.custom;
+
         EditorGUI.indentLevel++;
 
-        _spline.custom.splineColor = EditorGUILayout.ColorField("Spline Color", _spline.custom.splineColor);
-        _spline.custom.selectedColor = EditorGUILayout.ColorField("Selected Color", _spline.custom.selectedColor);
-        _spline.custom.connectionColor = EditorGUILayout.ColorField("Connection Color", _spline.custom.connectionColor);
-
-        _spline.custom.anchorColor = EditorGUILayout.ColorField("Anchor Color", _spline.custom.anchorColor);
-        _spline.custom.controlColor = EditorGUILayout.ColorField("Control Color", _spline.custom.controlColor);
-
-        _spline.custom.arrowColor = EditorGUILayout.ColorField("Arrow Color", _spline.custom.arrowColor);
+        custom.splineColor = EditorGUILayout.ColorField("Spline Color", custom.splineColor);
+        custom.selectedColor = EditorGUILayout.ColorField("Selected Color", custom.selectedColor);
+        custom.connectionColor = EditorGUILayout.ColorField("Connection Color", custom.connectionColor);
+        custom.anchorColor = EditorGUILayout.ColorField("Anchor Color", custom.anchorColor);
+        custom.controlColor = EditorGUILayout.ColorField("Control Color", custom.controlColor);
+        custom.arrowColor = EditorGUILayout.ColorField("Arrow Color", custom.arrowColor);
 
         EditorGUILayout.Space();
 
-        _spline.custom.alwaysShowArrows = EditorGUILayout.Toggle("Always Show Arrows", _spline.custom.alwaysShowArrows);
+        custom.alwaysShowArrows = EditorGUILayout.Toggle("Always Show Arrows", custom.alwaysShowArrows);
 
-        _spline.custom.useArrowDistanceDistribution = EditorGUILayout.Toggle("Arrow Distance Distribution", _spline.custom.useArrowDistanceDistribution);
+        custom.useArrowDistanceDistribution = EditorGUILayout.Toggle("Arrow Distance Distribution", custom.useArrowDistanceDistribution);
 
         EditorGUILayout.Space();
 
-        _spline.custom.arrowLength = EditorGUILayout.Slider("Arrow Length", _spline.custom.arrowLength, 0, 1f);
+        custom.arrowLength = EditorGUILayout.Slider("Arrow Length", custom.arrowLength, 0, 1f);
 
-        if (_spline.custom.useArrowDistanceDistribution)
-            _spline.custom.arrowDistance = EditorGUILayout.Slider("Arrow Distance", _spline.custom.arrowDistance, 0.1f, 1);
+        if (custom.useArrowDistanceDistribution)
+        {
+            float oldDistance = custom.arrowDistance;
+            custom.arrowDistance = EditorGUILayout.Slider("Arrow Distance", custom.arrowDistance, 0.1f, 1);
+
+            if (oldDistance != custom.arrowDistance)
+                RecalculateArrowBuffer();
+        }
         else
-            _spline.custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", _spline.custom.arrowDistribution, 1, 250);
+            custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", custom.arrowDistribution, 1, 250);
 
         EditorGUI.indentLevel--;
 
@@ -351,6 +367,7 @@ public class SplineEditor : Editor
         {
             Undo.RecordObject(_spline, "Insert Segment");
             _path.InsertSegment(_selectedSegment, _spline.transform.InverseTransformPoint(_mousePosOnPlane));
+            RecalculateArrowBuffer();
         }
 
         //TODO: remove or make better for 3D
@@ -377,6 +394,7 @@ public class SplineEditor : Editor
             {
                 Undo.RecordObject(_spline, "Remove Segment");
                 _path.DeleteSegment(closestAnchorIndex);
+                RecalculateArrowBuffer();
             }
         }
     }
@@ -395,12 +413,11 @@ public class SplineEditor : Editor
             Color color = _selectedSegment == i ? _spline.custom.selectedColor : _spline.custom.splineColor;
             Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, color, null, 2);
 
-            if (isRotate)
-                DrawRotation();
-            else
-                DrawMove();
-
         }
+        if (isRotate)
+            DrawRotation();
+        else
+            DrawMove();
 
     }
 
@@ -415,6 +432,7 @@ public class SplineEditor : Editor
             if (newPos == _path[i])
                 continue;
 
+            RecalculateArrowBuffer();
             Undo.RecordObject(_spline, "Move Point Scene");
             _path.MovePoint(i, newPos);
 
@@ -449,11 +467,10 @@ public class SplineEditor : Editor
 
         if (_spline.custom.useArrowDistanceDistribution)
         {
-            float distance = _spline.custom.arrowDistance;
-            for (int i = 0; i < _path.NumSegments; i++)
+            for (int i = 0; i < _bufferedArrowDistribution.Count; i++)
             {
-                float[] p = _path.GetBezierOfSegment(i).EqualDistancePoints(distance);
-                for (int j = 0; j < p.Length; j++)
+                List<float> p = _bufferedArrowDistribution[i];
+                for (int j = 0; j < p.Count; j++)
                 {
                     Quaternion rot = _spline.CalculateRotation(i + p[j]);
                     Vector3 pos = _spline.CalculatePosition(i + p[j]);
@@ -471,6 +488,15 @@ public class SplineEditor : Editor
                 Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
                 Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
+        }
+    }
+
+    private void RecalculateArrowBuffer()
+    {
+        _bufferedArrowDistribution = new();
+        for (int i = 0; i < _path.NumSegments; i++)
+        {
+            _bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance).ToList());
         }
     }
 

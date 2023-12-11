@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Data.Common;
 using TMPro;
 using UnityEngine;
@@ -42,6 +43,14 @@ public class SplineController : MonoBehaviour
     public void CreatePath()
     {
         path = new Path(new Vector3(0, 0, 0));
+    }
+
+    /// <summary>
+    /// Creates an new path at the given position in local space
+    /// </summary>
+    public void CreatePath(Vector3 position)
+    {
+        path = new Path(position);
     }
 
     /// <summary>
