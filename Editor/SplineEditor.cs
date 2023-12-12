@@ -18,7 +18,6 @@ public class SplineEditor : Editor
 
     int _selectedSegment = -1;
     Vector3 _mousePosOnPlane = Vector3.zero;
-    private List<List<float>> _bufferedArrowDistribution = new();
 
 
     private void OnEnable()
@@ -467,9 +466,9 @@ public class SplineEditor : Editor
 
         if (_spline.custom.useArrowDistanceDistribution)
         {
-            for (int i = 0; i < _bufferedArrowDistribution.Count; i++)
+            for (int i = 0; i < _spline.bufferedArrowDistribution.Count; i++)
             {
-                List<float> p = _bufferedArrowDistribution[i];
+                List<float> p = _spline.bufferedArrowDistribution[i];
                 for (int j = 0; j < p.Count; j++)
                 {
                     Quaternion rot = _spline.CalculateRotation(i + p[j]);
@@ -493,10 +492,10 @@ public class SplineEditor : Editor
 
     private void RecalculateArrowBuffer()
     {
-        _bufferedArrowDistribution = new();
+        _spline.bufferedArrowDistribution = new();
         for (int i = 0; i < _path.NumSegments; i++)
         {
-            _bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance).ToList());
+            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance).ToList());
         }
     }
 

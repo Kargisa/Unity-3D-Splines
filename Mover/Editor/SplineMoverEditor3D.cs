@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,13 +17,8 @@ public class SplineMoverEditor3D : Editor
             _mover = (SplineMover3D)target;
             _spline = _mover.splineController;
             _path = _spline.path;
-
         }
-        catch (System.Exception e)
-        {
-            Debug.LogError(e.Message);
-            throw new System.Exception("CameraEditor 'initialization Error' some props were not correctly initialized");
-        }
+        catch { }
     }
 
 
@@ -30,7 +26,7 @@ public class SplineMoverEditor3D : Editor
     {
         base.OnInspectorGUI();
 
-        if (!NotNullProps())
+        if (!NullProps())
             return;
 
         EditorGUILayout.Space();
@@ -76,7 +72,7 @@ public class SplineMoverEditor3D : Editor
     /// <summary>
     /// Checks if the splineMover has all the required props set
     /// </summary>
-    private bool NotNullProps()
+    private bool NullProps()
     {
         if (_spline == null && _mover.splineController != null)
         {
@@ -85,11 +81,11 @@ public class SplineMoverEditor3D : Editor
         }
         else if (_spline == null)
         {
-            Debug.LogError("SplineController is null");
-            return false;
+            Debug.LogWarning("no SplineController attached");
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     private void OnSceneGUI()
@@ -124,10 +120,28 @@ public class SplineMoverEditor3D : Editor
         }
         DrawRotation();
     }
+
     private void DrawRotation()
     {
+        if (_spline.bufferedArrowDistribution.Count == 0)
+            RecalculateArrowBuffer();
+
         Handles.color = _spline.custom.arrowColor;
 
+        if (_spline.custom.useArrowDistanceDistribution)
+        {
+            for (int i = 0; i < _spline.bufferedArrowDistribution.Count; i++)
+            {
+                List<float> p = _spline.bufferedArrowDistribution[i];
+                for (int j = 0; j < p.Count; j++)
+                {
+                    Quaternion rot = _spline.CalculateRotation(i + p[j]);
+                    Vector3 pos = _spline.CalculatePosition(i + p[j]);
+                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                }
+            }
+            return;
+        }
         float arrowsDistribution = _spline.custom.arrowDistribution;
         for (int j = 0; j < _path.NumSegments; j++)
         {
@@ -139,6 +153,15 @@ public class SplineMoverEditor3D : Editor
             }
         }
 
+    }
+
+    private void RecalculateArrowBuffer()
+    {
+        _spline.bufferedArrowDistribution = new();
+        for (int i = 0; i < _path.NumSegments; i++)
+        {
+            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance).ToList());
+        }
     }
 
 }
