@@ -23,7 +23,7 @@ public class SplineController : MonoBehaviour
     public bool customizerFoldOut = true;
 
     [HideInInspector] 
-    public List<List<float>> bufferedArrowDistribution = new();
+    public List<float[]> bufferedArrowDistribution = new();
 
 #endif
 

@@ -305,7 +305,14 @@ public class SplineEditor : Editor
         Handles.matrix = _spline.transform.localToWorldMatrix;
 
         Input(); //Input befor Draw
-        Draw(_spline.isRotate);
+        Paint(_spline.isRotate);
+        
+        // INFO: Debug
+        // ------------------------------------------
+        CubicBezier b = _path.GetBezierOfSegment(0);
+        Handles.CircleHandleCap(0, b.GetPoint(0.25f), Quaternion.identity, 0.01f, EventType.Repaint);
+        Handles.CircleHandleCap(1, b.GetPoint(0.75f), Quaternion.identity, 0.01f, EventType.Repaint);
+        // ------------------------------------------
 
         //Reinstantiate the old matrix
         Handles.matrix = originalMatrix;
@@ -326,6 +333,7 @@ public class SplineEditor : Editor
             for (int i = 0; i < _path.NumSegments; i++)
             {
                 CubicBezier localBezier = _path.GetBezierOfSegment(i);
+                
                 // beziere in world space (no rotations)
                 CubicBezier bezier = new();
                 for (int j = 0; j < 4; j++)
@@ -337,7 +345,7 @@ public class SplineEditor : Editor
                 Vector3 planeNormal = Vector3.Cross(p1TOp2, _spline.transform.up).normalized;
 
                 float dot = Vector3.Dot(r.direction, planeNormal);
-                if (dot <= 0.15f && dot >= -0.15f)
+                if (dot <= 0.01f && dot >= -0.01f)
                     continue;
 
                 float distToIntersection = Vector3.Dot(bezier.p1 - r.origin, planeNormal) / dot;
@@ -362,6 +370,7 @@ public class SplineEditor : Editor
             }
         }
 
+        // INFO: Inserts a segment at the mouse position on the spline
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1 && _path.Is2D)
         {
             Undo.RecordObject(_spline, "Insert Segment");
@@ -369,19 +378,24 @@ public class SplineEditor : Editor
             RecalculateArrowBuffer();
         }
 
-        //TODO: remove or make better for 3D
+        // TODO: remove or make better for 3D
+        // INFO: Adds a segment at the mouse position (only for 2D view)
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.shift && SceneView.lastActiveSceneView.in2DMode)
         {
             Undo.RecordObject(_spline, "Add Segment");
             _path.AddSegment(mousPos, Quaternion.identity);
         }
 
+        // INFO: removes a segment at the mouse position
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 1 && guiEvent.control)
         {
             float distToAnchor = 0.05f;
             int closestAnchorIndex = -1;
             for (int i = 0; i < _path.NumPoints; i++)
             {
+                if (i % 3 != 0)
+                    continue;
+                
                 float dist = DistFromPoint(r, _spline.transform.TransformPoint(_path[i]));
                 if (dist < distToAnchor)
                 {
@@ -398,7 +412,7 @@ public class SplineEditor : Editor
         }
     }
 
-    private void Draw(bool isRotate)
+    private void Paint(bool isRotate)
     {
         for (int i = 0; i < _path.NumSegments; i++)
         {
@@ -414,13 +428,13 @@ public class SplineEditor : Editor
 
         }
         if (isRotate)
-            DrawRotation();
+            PaintRotation();
         else
-            DrawMove();
+            PaintMove();
 
     }
 
-    private void DrawMove()
+    private void PaintMove()
     {
         for (int i = 0; i < _path.NumPoints; i++)
         {
@@ -438,10 +452,10 @@ public class SplineEditor : Editor
         }
 
         if (_spline.custom.alwaysShowArrows)
-            DrawRotationArrows();
+            PaintRotationArrows();
     }
 
-    private void DrawRotation()
+    private void PaintRotation()
     {
         for (int i = 0; i < _path.NumRotations; i++)
         {
@@ -456,11 +470,11 @@ public class SplineEditor : Editor
             _path.RotatePoint(i, newQuat);
         }
 
-        DrawRotationArrows();
+        PaintRotationArrows();
 
     }
 
-    private void DrawRotationArrows()
+    private void PaintRotationArrows()
     {
         Handles.color = _spline.custom.arrowColor;
 
@@ -468,8 +482,8 @@ public class SplineEditor : Editor
         {
             for (int i = 0; i < _spline.bufferedArrowDistribution.Count; i++)
             {
-                List<float> p = _spline.bufferedArrowDistribution[i];
-                for (int j = 0; j < p.Count; j++)
+                float[] p = _spline.bufferedArrowDistribution[i];
+                for (int j = 0; j < p.Length; j++)
                 {
                     Quaternion rot = _spline.CalculateRotation(i + p[j]);
                     Vector3 pos = _spline.CalculatePosition(i + p[j]);
@@ -495,7 +509,7 @@ public class SplineEditor : Editor
         _spline.bufferedArrowDistribution = new();
         for (int i = 0; i < _path.NumSegments; i++)
         {
-            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance).ToList());
+            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance));
         }
     }
 
