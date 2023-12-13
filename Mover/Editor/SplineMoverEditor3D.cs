@@ -26,7 +26,7 @@ public class SplineMoverEditor3D : Editor
     {
         base.OnInspectorGUI();
 
-        if (!NullProps())
+        if (NullProps())
             return;
 
         EditorGUILayout.Space();
@@ -101,13 +101,13 @@ public class SplineMoverEditor3D : Editor
         if (!Application.isPlaying)
             _mover.MoveOnSpline(_mover.Progress, MoveMode.Transform);
 
-        Draw();
+        Paint();
 
         //Reinstantiate the old matrix
         Handles.matrix = oldMatrix;
     }
 
-    private void Draw()
+    private void Paint()
     {
         if (!_mover.showPath)
             return;
@@ -118,10 +118,10 @@ public class SplineMoverEditor3D : Editor
 
             Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, _spline.custom.splineColor, null, 2);
         }
-        DrawRotation();
+        PaintRotation();
     }
 
-    private void DrawRotation()
+    private void PaintRotation()
     {
         if (_spline.bufferedArrowDistribution.Count == 0)
             RecalculateArrowBuffer();
@@ -132,8 +132,8 @@ public class SplineMoverEditor3D : Editor
         {
             for (int i = 0; i < _spline.bufferedArrowDistribution.Count; i++)
             {
-                List<float> p = _spline.bufferedArrowDistribution[i];
-                for (int j = 0; j < p.Count; j++)
+                float[] p = _spline.bufferedArrowDistribution[i];
+                for (int j = 0; j < p.Length; j++)
                 {
                     Quaternion rot = _spline.CalculateRotation(i + p[j]);
                     Vector3 pos = _spline.CalculatePosition(i + p[j]);
@@ -160,7 +160,7 @@ public class SplineMoverEditor3D : Editor
         _spline.bufferedArrowDistribution = new();
         for (int i = 0; i < _path.NumSegments; i++)
         {
-            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance).ToList());
+            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance));
         }
     }
 
