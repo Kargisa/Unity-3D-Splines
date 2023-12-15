@@ -654,7 +654,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1259652828}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.7641888, y: 0.027958155, z: 2.712}
+  m_LocalPosition: {x: -4.328373, y: -0.773098, z: 2.712}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -705,8 +705,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bad63f5f33f40c489063026d0793f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathFoldOut: 0
-  rotationsFoldOut: 0
+  pathFoldOut: 1
+  rotationsFoldOut: 1
   infoFoldOut: 0
   checkpointsFoldOut: 0
   isRotate: 0
@@ -718,28 +718,24 @@ MonoBehaviour:
     controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
     arrowColor: {r: 0, g: 0, b: 0, a: 1}
     arrowLength: 0.1
-    alwaysShowArrows: 0
+    alwaysShowArrows: 1
     useArrowDistanceDistribution: 1
-    arrowDistribution: 20
+    arrowDistribution: 25
     arrowDistance: 0.1
   customizerFoldOut: 1
   path:
     points:
-    - {x: -1.7641888, y: 0.027958155, z: 0}
-    - {x: -1.7614511, y: 0.54741305, z: 0}
-    - {x: -1.5707785, y: 1.0995297, z: 0}
-    - {x: -1.0757034, y: 1.1170032, z: 0}
-    - {x: -0.5806283, y: 1.1344767, z: 0}
-    - {x: -0.051832095, y: -0.007912159, z: 0}
-    - {x: 0.52574384, y: 0.0008392334, z: 0}
-    - {x: 1.1033198, y: 0.009590626, z: 0}
-    - {x: 1.2576139, y: 1.3986226, z: 0}
-    - {x: 2.0196652, y: 1.4306957, z: 0}
-    - {x: 2.7817166, y: 1.4627687, z: 0}
-    - {x: 3.2996895, y: 0.7418147, z: 0}
-    - {x: 2.7118297, y: 0.08288622, z: 0}
+    - {x: -1.2041335, y: 0.6033199, z: 0}
+    - {x: -0.6107106, y: 1.4567788, z: 0}
+    - {x: -0.20983349, y: 0.82307726, z: 0}
+    - {x: 0.1779705, y: 0.6356263, z: 0}
+    - {x: 0.56577444, y: 0.44817537, z: 0}
+    - {x: 1.341698, y: 0.6226188, z: 0}
+    - {x: 1.4586028, y: 0.23626804, z: 0}
+    - {x: 1.5755075, y: -0.1500827, z: 0}
+    - {x: 2.559857, y: -0.31615603, z: 0}
+    - {x: 2.5, y: 0, z: 0}
     rotations:
-    - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}

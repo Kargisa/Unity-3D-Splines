@@ -2,6 +2,7 @@ using log4net.Filter;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Unity.VisualScripting;
@@ -111,6 +112,9 @@ public class SplineEditor : Editor
         if (GUILayout.Button($"{(_spline.isRotate ? "Toggle to move" : "Toggle to rotate")}"))
         {
             _spline.isRotate = !_spline.isRotate;
+
+            if (!_spline.custom.alwaysShowArrows)
+                RecalculateArrowBuffer();
             SceneView.RepaintAll();
         }
     }
@@ -229,9 +233,9 @@ public class SplineEditor : Editor
         if (custom.useArrowDistanceDistribution)
         {
             float oldDistance = custom.arrowDistance;
-            custom.arrowDistance = EditorGUILayout.Slider("Arrow Distance", custom.arrowDistance, 0.1f, 1);
+            custom.arrowDistance = EditorGUILayout.Slider("Arrow Distance", custom.arrowDistance, 0.05f, 1);
 
-            if (oldDistance != custom.arrowDistance)
+            if (oldDistance != custom.arrowDistance && _spline.custom.alwaysShowArrows)
                 RecalculateArrowBuffer();
         }
         else
@@ -261,13 +265,13 @@ public class SplineEditor : Editor
         if (!checkpointsFoldOut)
             return;
 
-
         EditorGUI.indentLevel++;
         for (int i = 0; i < _path.checkpoints.Count; i++)
         {
             _path.checkpoints[i].foldOut = EditorGUILayout.Foldout(_path.checkpoints[i].foldOut, $"Checkpoint {i + 1}");
             if (!_path.checkpoints[i].foldOut)
                 continue;
+
             GUI.enabled = false;
             EditorGUILayout.Toggle("Is Closed", _path.checkpoints[i].isClosed);
             EditorGUILayout.Toggle("Is 2D", _path.checkpoints[i].is2D);
@@ -306,7 +310,7 @@ public class SplineEditor : Editor
 
         Input(); //Input befor Draw
         Paint(_spline.isRotate);
-        
+
         // INFO: Debug
         // ------------------------------------------
         CubicBezier b = _path.GetBezierOfSegment(0);
@@ -333,7 +337,7 @@ public class SplineEditor : Editor
             for (int i = 0; i < _path.NumSegments; i++)
             {
                 CubicBezier localBezier = _path.GetBezierOfSegment(i);
-                
+
                 // beziere in world space (no rotations)
                 CubicBezier bezier = new();
                 for (int j = 0; j < 4; j++)
@@ -370,23 +374,24 @@ public class SplineEditor : Editor
             }
         }
 
-        // INFO: Inserts a segment at the mouse position on the spline
+        // inserts a segment at the mouse position on the spline (only in 2D)
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1 && _path.Is2D)
         {
             Undo.RecordObject(_spline, "Insert Segment");
             _path.InsertSegment(_selectedSegment, _spline.transform.InverseTransformPoint(_mousePosOnPlane));
-            RecalculateArrowBuffer();
+
+            if (_spline.custom.alwaysShowArrows)
+                RecalculateArrowBuffer();
         }
 
-        // TODO: remove or make better for 3D
-        // INFO: Adds a segment at the mouse position (only for 2D view)
-        if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.shift && SceneView.lastActiveSceneView.in2DMode)
+        // Adds a segment at the mouse position (only for 2D)
+        if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.shift && SceneView.lastActiveSceneView.in2DMode && _path.Is2D)
         {
             Undo.RecordObject(_spline, "Add Segment");
             _path.AddSegment(mousPos, Quaternion.identity);
         }
 
-        // INFO: removes a segment at the mouse position
+        // removes a segment at the mouse position
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 1 && guiEvent.control)
         {
             float distToAnchor = 0.05f;
@@ -395,7 +400,7 @@ public class SplineEditor : Editor
             {
                 if (i % 3 != 0)
                     continue;
-                
+
                 float dist = DistFromPoint(r, _spline.transform.TransformPoint(_path[i]));
                 if (dist < distToAnchor)
                 {
@@ -407,7 +412,9 @@ public class SplineEditor : Editor
             {
                 Undo.RecordObject(_spline, "Remove Segment");
                 _path.DeleteSegment(closestAnchorIndex);
-                RecalculateArrowBuffer();
+
+                if (_spline.custom.alwaysShowArrows)
+                    RecalculateArrowBuffer();
             }
         }
     }
@@ -445,7 +452,8 @@ public class SplineEditor : Editor
             if (newPos == _path[i])
                 continue;
 
-            RecalculateArrowBuffer();
+            if (_spline.custom.alwaysShowArrows)
+                RecalculateArrowBuffer();
             Undo.RecordObject(_spline, "Move Point Scene");
             _path.MovePoint(i, newPos);
 
@@ -506,7 +514,7 @@ public class SplineEditor : Editor
 
     private void RecalculateArrowBuffer()
     {
-        _spline.bufferedArrowDistribution = new();
+        _spline.bufferedArrowDistribution.Clear();
         for (int i = 0; i < _path.NumSegments; i++)
         {
             _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance));

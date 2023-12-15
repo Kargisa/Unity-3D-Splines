@@ -1,7 +1,8 @@
+using System;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public struct QuadraticBezier : IBezier, IBezierAuto
+public struct QuadraticBezier : IBezier, IBezierAuto, IFormattable
 {
     public Vector3 p1 { get; set; }
     public Vector3 p2 { get; set; }
@@ -34,11 +35,9 @@ public struct QuadraticBezier : IBezier, IBezierAuto
 
     public readonly float GetEstimatedLength(int resolution) => Bezier.EstimateCurveLength(p1, p2, p3, resolution);
 
-    //public readonly float GetEstimatedLength(BezierResolution resolution) => Bezier.EstimateCurveLength(p1, p2, p3, (int)resolution);
-
-    public readonly Vector3 GetPoint(float t) => Bezier.QuadratcBezier(p1, p2, p3, t);
-
     public readonly float FastLengthEstimation() => (Vector3.Distance(p1, p2) + Vector3.Distance(p2, p3)) / 2 + Vector3.Distance(p1, p3) / 2;
+   
+    public readonly Vector3 GetPoint(float t) => Bezier.QuadratcBezier(p1, p2, p3, t);
 
     public readonly float PointFromDistance(int resolution, float start, float distance) => Bezier.GetPointFromDistance(p1, p2, p3, resolution, start, distance);
 
@@ -64,5 +63,26 @@ public struct QuadraticBezier : IBezier, IBezierAuto
         else
             resolution = Mathf.CeilToInt(fastLength * ResPerMeter);
         return EqualDistancePoints(distance, resolution);
+    }
+
+    public override string ToString() => ToString(null, null);
+
+    public string ToString(string format) => ToString(format, null);
+
+    public string ToString(string format, IFormatProvider formatProvider)
+    {
+        if (string.IsNullOrEmpty(format))
+            format = "F2";
+
+        formatProvider ??= System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
+
+        return string.Format(
+            formatProvider,
+            "p1: {0} \np2: {1} \np3: {2} \nr1: {3} \nr2 {4}",
+            p1.ToString(format, formatProvider),
+            p2.ToString(format, formatProvider),
+            p3.ToString(format, formatProvider),
+            r1.ToString(format, formatProvider),
+            r2.ToString(format, formatProvider));
     }
 }

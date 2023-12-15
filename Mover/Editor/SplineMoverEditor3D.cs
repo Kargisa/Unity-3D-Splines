@@ -157,6 +157,9 @@ public class SplineMoverEditor3D : Editor
 
     private void RecalculateArrowBuffer()
     {
+        if (!_spline.custom.alwaysShowArrows || !_spline.isRotate)
+            return;
+
         _spline.bufferedArrowDistribution = new();
         for (int i = 0; i < _path.NumSegments; i++)
         {

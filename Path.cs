@@ -294,6 +294,26 @@ public class Path
             CubicBezier b = GetBezierOfSegment(i);
             length += b.Length;
         }
+
+        return length;
+    }
+
+    /// <summary>
+    /// gets the length of the path with a custom resolution
+    /// </summary>
+    /// <param name="resolutions">resolutions for the beziers</param>
+    /// <returns>length of the spline</returns>
+    public float GetLength(params int[] resolutions)
+    {
+        if (resolutions.Length != NumSegments)
+            throw new ArgumentException("resolutions must have the same length as the number of segments in the spline");
+
+        float length = 0;
+        for (int i = 0; i < NumSegments; i++)
+        {
+            CubicBezier b = GetBezierOfSegment(i);
+            length += b.GetEstimatedLength(resolutions[i]);
+        }
         return length;
     }
 
