@@ -1,9 +1,10 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public struct CubicBezier : IBezier, IBezierAuto
+public struct CubicBezier : IBezier, IBezierAuto, IFormattable
 {
     public Vector3 p1 { get; set; }
     public Vector3 p2 { get; set; }
@@ -73,12 +74,10 @@ public struct CubicBezier : IBezier, IBezierAuto
     public readonly float GetEstimatedLength() => Bezier.EstimateCurveLength(p1, p2, p3, p4, Mathf.CeilToInt(FastLengthEstimation()) * ResPerMeter);
 
     public readonly float GetEstimatedLength(int resolution) => Bezier.EstimateCurveLength(p1, p2, p3, p4, resolution);
-
-    //public readonly float GetEstimatedLength(BezierResolution resolution) => Bezier.EstimateCurveLength(p1, p2, p3, p4, (int)resolution); 
-
+    
+    public readonly float FastLengthEstimation() => new QuadraticBezier(p1, (3.0f * p3 - p4 + 3.0f * p2 - p1) / 4.0f, p3).FastLengthEstimation();
+    
     public readonly Vector3 GetPoint(float t) => Bezier.CubicBezier(p1, p2, p3, p4, t);
-
-    public readonly float FastLengthEstimation() => new QuadraticBezier(p1, (3.0f * p3 - p4 + 3.0f * p2 - p1) / 4.0f, p3).Length;
 
     public readonly float PointFromDistance(int resolution, float start, float distance) => Bezier.GetPointFromDistance(p1, p2, p3, p4, resolution, start, distance);
 
@@ -105,5 +104,27 @@ public struct CubicBezier : IBezier, IBezierAuto
         else
             resolution = Mathf.CeilToInt(fastLength * ResPerMeter);
         return EqualDistancePoints(distance, resolution);
+    }
+
+    public override string ToString() => ToString(null, null);
+
+    public string ToString(string format) => ToString(format, null);
+    
+    public string ToString(string format, IFormatProvider formatProvider)
+    {
+        if (string.IsNullOrEmpty(format))
+            format = "F2";
+
+        formatProvider ??= System.Globalization.CultureInfo.InvariantCulture.NumberFormat;
+
+        return string.Format(
+            formatProvider, 
+            "p1: {0} \np2: {1} \np3: {2} \np4: {3} \nr1: {4} \nr2 {5}", 
+            p1.ToString(format, formatProvider), 
+            p2.ToString(format, formatProvider), 
+            p3.ToString(format, formatProvider), 
+            p4.ToString(format, formatProvider), 
+            r1.ToString(format, formatProvider), 
+            r2.ToString(format, formatProvider));
     }
 }
