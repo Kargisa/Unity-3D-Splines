@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Data.Common;
 using TMPro;
+using UnityEditor.PackageManager.Requests;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -27,11 +28,17 @@ public class SplineController : MonoBehaviour
 
 #endif
 
-    [HideInInspector]
-    public Path path;
+    /// <summary>
+    /// The logic of the spline
+    /// </summary>
+    [SerializeField, HideInInspector]
+    private Path path;
+
+    public Path Path { get => path; }
 
     private void Start()
     {
+        Debug.Log("HI");
         /*
          * 50 => 8.41389
          * 100 => 8.414043
@@ -39,6 +46,11 @@ public class SplineController : MonoBehaviour
          * 
          * FULL => 8.414089
         */
+    }
+
+    private void Reset()
+    {
+        CreatePath();
     }
 
     /// <summary>
@@ -64,12 +76,12 @@ public class SplineController : MonoBehaviour
     /// <returns>Position on the spline [local space]</returns>
     public Vector3 CalculatePosition(float t)
     {
-        int numSegments = path.NumSegments;
+        int numSegments = Path.NumSegments;
         t = Mathf.Clamp(t, 0, numSegments);
         int currentSegment = Mathf.FloorToInt(t) + (t == numSegments ? -1 : 0);
         float segmentT = t - currentSegment;
 
-        CubicBezier bezier = path.GetBezierOfSegment(currentSegment);
+        CubicBezier bezier = Path.GetBezierOfSegment(currentSegment);
 
         return bezier.GetPoint(segmentT);
 
@@ -136,5 +148,5 @@ public class SplineController : MonoBehaviour
     }
 
 
-    public override string ToString() => $"path: {path}";
+    public override string ToString() => $"path: {Path}";
 }

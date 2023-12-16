@@ -7,33 +7,32 @@ using UnityEngine;
 public class SplineMoverEditor3D : Editor
 {
     SplineMover3D _mover;
-    SplineController _spline;
-    Path _path;
 
     private void OnEnable()
     {
-        try
-        {
-            _mover = (SplineMover3D)target;
-            _spline = _mover.splineController;
-            _path = _spline.path;
-        }
-        catch { }
+        _mover = (SplineMover3D)target;
     }
-
 
     public override void OnInspectorGUI()
     {
+        
         base.OnInspectorGUI();
+        serializedObject.ApplyModifiedProperties();
 
         if (NullProps())
             return;
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Path", EditorStyles.boldLabel);
-        DrawProgress(_mover.Progress, _spline.path.NumSegments, "Progress");
+        
+        // is this even needed!?!?!?!?!?!?
+        // serializedObject.Update();
+        
+        DrawProgress(_mover.Progress, _mover.splineController.Path.NumSegments, "Progress");
         PathButton();
 
+        // is this even needed!?!?!?!?!?!?
+        // serializedObject.ApplyModifiedProperties();
     }
 
     /// <summary>
@@ -42,7 +41,7 @@ public class SplineMoverEditor3D : Editor
     private void DrawProgress(float value, float max, string label)
     {
         float prevValue = value;
-        if (_path.IsClosed)
+        if (_mover.splineController.Path.IsClosed)
         {
             value = IndexHelper.LoopIndex(value, max);
             prevValue = value;
@@ -74,14 +73,9 @@ public class SplineMoverEditor3D : Editor
     /// </summary>
     private bool NullProps()
     {
-        if (_spline == null && _mover.splineController != null)
+        if (_mover.splineController == null)
         {
-            _spline = _mover.splineController;
-            _path = _spline.path;
-        }
-        else if (_spline == null)
-        {
-            Debug.LogWarning("no SplineController attached");
+            Debug.LogWarning("no spline controller attached");
             return true;
         }
 
@@ -90,13 +84,13 @@ public class SplineMoverEditor3D : Editor
 
     private void OnSceneGUI()
     {
-        if (_spline == null)
+        if (_mover.splineController == null)
             return;
 
         //Save the old matrix
         Matrix4x4 oldMatrix = Handles.matrix;
         //Set Handles.matrix to the localToWorldMatrix to enable drawing the spline in relation to the spline object
-        Handles.matrix = _spline.transform.localToWorldMatrix;
+        Handles.matrix = _mover.splineController.transform.localToWorldMatrix;
 
         if (!Application.isPlaying)
             _mover.MoveOnSpline(_mover.Progress, MoveMode.Transform);
@@ -112,44 +106,44 @@ public class SplineMoverEditor3D : Editor
         if (!_mover.showPath)
             return;
 
-        for (int i = 0; i < _path.NumSegments; i++)
+        for (int i = 0; i < _mover.splineController.Path.NumSegments; i++)
         {
-            CubicBezier bezier = _path.GetBezierOfSegment(i);
+            CubicBezier bezier = _mover.splineController.Path.GetBezierOfSegment(i);
 
-            Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, _spline.custom.splineColor, null, 2);
+            Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, _mover.splineController.custom.splineColor, null, 2);
         }
         PaintRotation();
     }
 
     private void PaintRotation()
     {
-        if (_spline.bufferedArrowDistribution.Count == 0)
+        if (_mover.splineController.bufferedArrowDistribution.Count == 0)
             RecalculateArrowBuffer();
 
-        Handles.color = _spline.custom.arrowColor;
+        Handles.color = _mover.splineController.custom.arrowColor;
 
-        if (_spline.custom.useArrowDistanceDistribution)
+        if (_mover.splineController.custom.useArrowDistanceDistribution)
         {
-            for (int i = 0; i < _spline.bufferedArrowDistribution.Count; i++)
+            for (int i = 0; i < _mover.splineController.bufferedArrowDistribution.Count; i++)
             {
-                float[] p = _spline.bufferedArrowDistribution[i];
+                float[] p = _mover.splineController.bufferedArrowDistribution[i];
                 for (int j = 0; j < p.Length; j++)
                 {
-                    Quaternion rot = _spline.CalculateRotation(i + p[j]);
-                    Vector3 pos = _spline.CalculatePosition(i + p[j]);
-                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                    Quaternion rot = _mover.splineController.CalculateRotation(i + p[j]);
+                    Vector3 pos = _mover.splineController.CalculatePosition(i + p[j]);
+                    Handles.ArrowHandleCap(i, pos, rot, _mover.splineController.custom.arrowLength, EventType.Repaint);
                 }
             }
             return;
         }
-        float arrowsDistribution = _spline.custom.arrowDistribution;
-        for (int j = 0; j < _path.NumSegments; j++)
+        float arrowsDistribution = _mover.splineController.custom.arrowDistribution;
+        for (int j = 0; j < _mover.splineController.Path.NumSegments; j++)
         {
             for (int i = 0; i < arrowsDistribution; i++)
             {
-                Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
-                Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
-                Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                Quaternion rot = _mover.splineController.CalculateRotation(j + i / arrowsDistribution);
+                Vector3 pos = _mover.splineController.CalculatePosition(j + i / arrowsDistribution);
+                Handles.ArrowHandleCap(i, pos, rot, _mover.splineController.custom.arrowLength, EventType.Repaint);
             }
         }
 
@@ -157,13 +151,14 @@ public class SplineMoverEditor3D : Editor
 
     private void RecalculateArrowBuffer()
     {
-        if (!_spline.custom.alwaysShowArrows || !_spline.isRotate)
+        SplineController spline = _mover.splineController;
+        if (!spline.custom.alwaysShowArrows || !spline.isRotate)
             return;
 
-        _spline.bufferedArrowDistribution = new();
-        for (int i = 0; i < _path.NumSegments; i++)
+        spline.bufferedArrowDistribution.Clear();
+        for (int i = 0; i < spline.Path.NumSegments; i++)
         {
-            _spline.bufferedArrowDistribution.Add(_path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance));
+            spline.bufferedArrowDistribution.Add(spline.Path.GetBezierOfSegment(i).EqualDistancePoints(spline.custom.arrowDistance));
         }
     }
 
