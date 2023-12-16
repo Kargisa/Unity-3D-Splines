@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -22,6 +23,7 @@ public class SplineMover3D : MonoBehaviour
     [SerializeField, HideInInspector] private bool snapOutOnCollision = true;
 
     [SerializeField, HideInInspector] private float progress = 0f;
+
 
     float startTime = 0;
     float endTime = 0;
@@ -126,7 +128,7 @@ public class SplineMover3D : MonoBehaviour
     /// <param name="value">progress on the spline</param>
     public void MoveOnSpline(float value, MoveMode mode)
     {
-        value = splineController.path.IsClosed ? IndexHelper.LoopIndex(value, splineController.path.NumSegments) : value;
+        value = splineController.Path.IsClosed ? IndexHelper.LoopIndex(value, splineController.Path.NumSegments) : value;
 
         Vector3 pos = splineController.CalculatePositionWorld(value);
         Quaternion rot = splineController.CalculateRotationWorld(value);
@@ -152,7 +154,7 @@ public class SplineMover3D : MonoBehaviour
     /// <param name="time">time it takes to move to the next segment</param>
     public void MoveToNextSegment(float time, MoveMode mode)
     {
-        int nextSegment = Mathf.FloorToInt(Mathf.Clamp(progress + 1, 0, splineController.path.NumSegments));
+        int nextSegment = Mathf.FloorToInt(Mathf.Clamp(progress + 1, 0, splineController.Path.NumSegments));
         if (nextSegment == progress)
             return;
 
@@ -171,7 +173,7 @@ public class SplineMover3D : MonoBehaviour
     /// <param name="time">time it takes to move to the segment</param>
     public void MoveToSegment(int segment, MoveMode mode, float time)
     {
-        segment = Mathf.Clamp(segment, 0, splineController.path.NumSegments);
+        segment = Mathf.Clamp(segment, 0, splineController.Path.NumSegments);
         if (segment == progress)
             return;
 
@@ -190,7 +192,7 @@ public class SplineMover3D : MonoBehaviour
     /// <param name="time">time it takes to move to t</param>
     public void MoveToProgress(float t, MoveMode mode, float time)
     {
-        t = Mathf.Clamp(t, 0, splineController.path.NumSegments);
+        t = Mathf.Clamp(t, 0, splineController.Path.NumSegments);
         if (t == progress)
             return;
 
@@ -216,8 +218,8 @@ public class SplineMover3D : MonoBehaviour
         };
 
 
-        int currentSegment = Mathf.FloorToInt(progress) + (progress == splineController.path.NumSegments ? -1 : 0);
-        CubicBezier bezier = splineController.path.GetBezierOfSegment(currentSegment);
+        int currentSegment = Mathf.FloorToInt(progress) + (progress == splineController.Path.NumSegments ? -1 : 0);
+        CubicBezier bezier = splineController.Path.GetBezierOfSegment(currentSegment);
         float segmentT = progress - currentSegment;
         float t = bezier.PointFromDistance(segmentT, velocity * delta) + currentSegment;
         MoveOnSpline(t, mode);

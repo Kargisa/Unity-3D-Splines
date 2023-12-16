@@ -22,8 +22,13 @@ public class Path
     [SerializeField, HideInInspector]
     private bool isClosed;
 
-    [HideInInspector]
-    public List<PathCheckpoint> checkpoints;
+    /// <summary>
+    /// All checkpoints created on the path
+    /// </summary>
+    [SerializeField, HideInInspector]
+    private List<PathCheckpoint> checkpoints;
+
+    public List<PathCheckpoint> Checkpoints { get => checkpoints; }
 
 
     public Path(Vector3 center)
@@ -61,7 +66,7 @@ public class Path
     public int NumRotations { get => rotations.Count; }
 
     /// <summary>
-    /// Checks if points are null
+    /// Checks if points is null
     /// </summary>
     public bool IsNull { get => points == null; }
 
@@ -174,12 +179,23 @@ public class Path
     /// <summary>
     /// Loads the last checkpoint created
     /// </summary>
-    public void LoadLastCheckpoint()
+    public void LoadCheckpoint()
     {
         points = LastCheckPoint.points.ToList();
         rotations = LastCheckPoint.rotations.ToList();
         isClosed = LastCheckPoint.isClosed;
         is2D = LastCheckPoint.is2D;
+    }
+
+    /// <summary>
+    /// Loads the checkpoint at the given index
+    /// </summary>
+    public void LoadCheckpoint(int i)
+    {
+        points = checkpoints[i].points.ToList();
+        rotations = checkpoints[i].rotations.ToList();
+        isClosed = checkpoints[i].isClosed;
+        is2D = checkpoints[i].is2D;
     }
 
     /// <summary>
@@ -199,6 +215,18 @@ public class Path
         if (checkpoints.Count - 1 <= 0)
             return false;
         checkpoints.RemoveAt(checkpoints.Count - 1);
+        return true;
+    }
+
+    /// <summary>
+    /// Deletes the checkpoint at the given index
+    /// </summary>
+    /// <returns>success or fail (eg. delete last checkpoint = fail)</returns>
+    public bool DeleteCheckpoint(int i)
+    {
+        if (checkpoints.Count - 1 <= 0)
+            return false;
+        checkpoints.RemoveAt(i);
         return true;
     }
 
