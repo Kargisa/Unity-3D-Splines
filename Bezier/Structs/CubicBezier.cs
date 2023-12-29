@@ -106,6 +106,21 @@ public struct CubicBezier : IBezier, IBezierAuto, IFormattable
         return EqualDistancePoints(distance, resolution);
     }
 
+    public readonly CubicBezier Transform(Matrix4x4 transformation)
+    {
+        Quaternion matrixQuad = transformation.rotation;
+
+        return new CubicBezier(
+            transformation.MultiplyPoint(p1),
+            transformation.MultiplyPoint(p2),
+            transformation.MultiplyPoint(p3),
+            transformation.MultiplyPoint(p4),
+            matrixQuad * r1,
+            matrixQuad * r2
+            );
+        
+    }
+
     public override string ToString() => ToString(null, null);
 
     public string ToString(string format) => ToString(format, null);
