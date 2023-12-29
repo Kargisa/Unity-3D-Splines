@@ -11,11 +11,15 @@ public class SplineEditor : Editor
     int _selectedSegment = -1;
     Vector3 _mousePosOnPlane = Vector3.zero;
 
+    Vector3 _oldScale;
+
     private void OnEnable()
     {
         _spline = (SplineController)target;
         if (_spline.Path.IsNull)
             _spline.CreatePath();
+
+        _oldScale = _spline.transform.lossyScale;
 
         RecalculateArrowBuffer();
         Undo.undoRedoPerformed += RecalculateArrowBuffer;
@@ -54,6 +58,8 @@ public class SplineEditor : Editor
         DrawSplineCustomizer();
 
         EditorGUILayout.Space();
+
+        CheckForScaleChange();
 
         Info(ref _spline.infoFoldOut);
 
@@ -105,6 +111,7 @@ public class SplineEditor : Editor
 
             if (!_spline.custom.alwaysShowArrows)
                 RecalculateArrowBuffer();
+            
             SceneView.RepaintAll();
         }
     }
@@ -290,6 +297,15 @@ public class SplineEditor : Editor
         EditorGUI.indentLevel--;
     }
 
+    private void CheckForScaleChange()
+    {
+        if (_oldScale != _spline.transform.lossyScale)
+        {
+            _oldScale = _spline.transform.lossyScale;
+            RecalculateArrowBuffer();
+        }
+    }
+
     private void OnSceneGUI()
     {
 
@@ -320,14 +336,7 @@ public class SplineEditor : Editor
 
             for (int i = 0; i < _spline.Path.NumSegments; i++)
             {
-                //CubicBezier localBezier = _spline.Path.GetBezierOfSegment(i);
-
-                // beziere in world space (no rotations)
                 CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix);
-                //for (int j = 0; j < 4; j++)
-                //{
-                //    bezier[j] = _spline.transform.TransformPoint(localBezier[j]);
-                //}
 
                 Vector3 p1TOp2 = bezier.p4 - bezier.p1;
                 Vector3 planeNormal = Vector3.Cross(p1TOp2, _spline.transform.up).normalized;
@@ -489,6 +498,7 @@ public class SplineEditor : Editor
             }
             return;
         }
+        
         float arrowsDistribution = _spline.custom.arrowDistribution;
         for (int j = 0; j < _spline.Path.NumSegments; j++)
         {
@@ -507,7 +517,7 @@ public class SplineEditor : Editor
         _spline.bufferedArrowDistribution.Clear();
         for (int i = 0; i < _spline.Path.NumSegments; i++)
         {
-            _spline.bufferedArrowDistribution.Add(_spline.Path.GetBezierOfSegment(i).EqualDistancePoints(_spline.custom.arrowDistance));
+            _spline.bufferedArrowDistribution.Add(_spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix).EqualDistancePoints(_spline.custom.arrowDistance));
         }
     }
 
