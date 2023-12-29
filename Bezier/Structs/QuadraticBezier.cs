@@ -65,6 +65,20 @@ public struct QuadraticBezier : IBezier, IBezierAuto, IFormattable
         return EqualDistancePoints(distance, resolution);
     }
 
+    public readonly QuadraticBezier Transform(Matrix4x4 transformation)
+    {
+        Quaternion matrixQuad = transformation.rotation;
+
+        return new QuadraticBezier(
+            transformation.MultiplyPoint(p1),
+            transformation.MultiplyPoint(p2),
+            transformation.MultiplyPoint(p3),
+            matrixQuad * r1,
+            matrixQuad * r2
+            );
+
+    }
+
     public override string ToString() => ToString(null, null);
 
     public string ToString(string format) => ToString(format, null);

@@ -39,7 +39,11 @@ public class SplineController : MonoBehaviour
     private void Start()
     {
         Debug.Log("HI");
-        /*
+
+        /* INFO: Lengths at resolutions
+         * 
+         * FULL = very high resolution
+         *
          * 50 => 8.41389
          * 100 => 8.414043
          * 1000 => 8.414093

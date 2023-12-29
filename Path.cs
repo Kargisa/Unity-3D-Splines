@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -22,12 +21,12 @@ public class Path
     [SerializeField, HideInInspector]
     private bool isClosed;
 
-    /// <summary>
-    /// All checkpoints created on the path
-    /// </summary>
     [SerializeField, HideInInspector]
     private List<PathCheckpoint> checkpoints;
 
+    /// <summary>
+    /// All checkpoints created on the path
+    /// </summary>
     public List<PathCheckpoint> Checkpoints { get => checkpoints; }
 
 
@@ -51,6 +50,7 @@ public class Path
         CreateCheckpoint();
     }
 
+    /// <returns>Point in local space at index <c>i</c></returns>
     public Vector3 this[int i]
     {
         get => points[i];
@@ -93,8 +93,8 @@ public class Path
 
     public bool IsClosed
     {
-        get { return isClosed; }
-        set { isClosed = value; }
+        get => isClosed;
+        set => isClosed = value;
     }
 
     /// <summary>
@@ -327,14 +327,14 @@ public class Path
     }
 
     /// <summary>
-    /// gets the length of the path with a custom resolution
+    /// Gets the length of the path with a custom resolution
     /// </summary>
     /// <param name="resolutions">resolutions for the beziers</param>
     /// <returns>length of the spline</returns>
     public float GetLength(params int[] resolutions)
     {
         if (resolutions.Length != NumSegments)
-            throw new ArgumentException("resolutions must have the same length as the number of segments in the spline");
+            throw new System.ArgumentException("resolutions must have the same length as the number of segments in the spline");
 
         float length = 0;
         for (int i = 0; i < NumSegments; i++)
@@ -345,8 +345,47 @@ public class Path
         return length;
     }
 
+    /// <summary>
+    /// Calculates a transformation for the path
+    /// </summary>
+    /// <param name="transformation">The tarnsformation matrix</param>
+    /// <returns>Information about the transformed path</returns>
+    public PathInfo Transform(Matrix4x4 transformation)
+    {
+        Vector3[] points = new Vector3[NumPoints];
+        Quaternion[] rotations = new Quaternion[NumRotations];
+        //PathCheckpoint[] checkpoints = new PathCheckpoint[Checkpoints.Count];
+
+        Quaternion matrixQud = transformation.rotation;
+
+        for (int i = 0; i < points.Length; i++)
+        {
+            points[i] = transformation.MultiplyPoint(this[i]);
+        }
+
+        for (int i = 0; i < rotations.Length; i++)
+        {
+            rotations[i] = matrixQud * GetRotation(i);
+        }
+
+        return new PathInfo(points, rotations);
+
+    }
+
     public override string ToString()
     {
         return $"points: {NumPoints}, segments: {NumSegments}, rotations {NumRotations}, checkpoints: {checkpoints.Count}";
+    }
+}
+
+public readonly struct PathInfo
+{
+    public readonly Vector3[] points;
+    public readonly Quaternion[] rotations;
+
+    public PathInfo(Vector3[] points, Quaternion[] rotations)
+    {
+        this.points = points;
+        this.rotations = rotations;
     }
 }

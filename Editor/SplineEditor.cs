@@ -11,7 +11,6 @@ public class SplineEditor : Editor
     int _selectedSegment = -1;
     Vector3 _mousePosOnPlane = Vector3.zero;
 
-
     private void OnEnable()
     {
         _spline = (SplineController)target;
@@ -293,24 +292,18 @@ public class SplineEditor : Editor
 
     private void OnSceneGUI()
     {
-        //Save the old matrix
-        Matrix4x4 originalMatrix = Handles.matrix;
 
-        //Set Handles.matrix to the localToWorldMatrix to enable to draw the spline in relation to the spline object
-        Handles.matrix = _spline.transform.localToWorldMatrix;
-
-        Input(); //Input befor Draw
+        Input(); //Input befor Paint
         Paint(_spline.isRotate);
 
+
         // INFO: Debug
-        // ------------------------------------------
-        CubicBezier b = _spline.Path.GetBezierOfSegment(0);
+        // <------------------------------------------>
+        CubicBezier b = _spline.Path.GetBezierOfSegment(0).Transform(_spline.transform.localToWorldMatrix);
         Handles.CircleHandleCap(0, b.GetPoint(0.25f), Quaternion.identity, 0.01f, EventType.Repaint);
         Handles.CircleHandleCap(1, b.GetPoint(0.75f), Quaternion.identity, 0.01f, EventType.Repaint);
-        // ------------------------------------------
+        // <------------------------------------------>
 
-        //Reinstantiate the old matrix
-        Handles.matrix = originalMatrix;
     }
 
     private void Input()
@@ -327,14 +320,14 @@ public class SplineEditor : Editor
 
             for (int i = 0; i < _spline.Path.NumSegments; i++)
             {
-                CubicBezier localBezier = _spline.Path.GetBezierOfSegment(i);
+                //CubicBezier localBezier = _spline.Path.GetBezierOfSegment(i);
 
                 // beziere in world space (no rotations)
-                CubicBezier bezier = new();
-                for (int j = 0; j < 4; j++)
-                {
-                    bezier[j] = _spline.transform.TransformPoint(localBezier[j]);
-                }
+                CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix);
+                //for (int j = 0; j < 4; j++)
+                //{
+                //    bezier[j] = _spline.transform.TransformPoint(localBezier[j]);
+                //}
 
                 Vector3 p1TOp2 = bezier.p4 - bezier.p1;
                 Vector3 planeNormal = Vector3.Cross(p1TOp2, _spline.transform.up).normalized;
@@ -414,7 +407,7 @@ public class SplineEditor : Editor
     {
         for (int i = 0; i < _spline.Path.NumSegments; i++)
         {
-            CubicBezier bezier = _spline.Path.GetBezierOfSegment(i);
+            CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix);
             if (!isRotate)
             {
                 Handles.color = _spline.custom.connectionColor;
@@ -425,28 +418,31 @@ public class SplineEditor : Editor
             Handles.DrawBezier(bezier.p1, bezier.p4, bezier.p2, bezier.p3, color, null, 2);
 
         }
-        if (isRotate)
-            PaintRotation();
-        else
-            PaintMove();
 
+        PathInfo info = _spline.Path.Transform(_spline.transform.localToWorldMatrix);
+
+        if (isRotate)
+            PaintRotation(info);
+        else
+            PaintMove(info);
+        
     }
 
-    private void PaintMove()
+    private void PaintMove(PathInfo pathInfo)
     {
-        for (int i = 0; i < _spline.Path.NumPoints; i++)
+        for (int i = 0; i < pathInfo.points.Length; i++)
         {
             Handles.color = i % 3 == 0 ? _spline.custom.anchorColor : _spline.custom.controlColor;
             float size = i % 3 == 0 ? 0.1f : 0.075f;
-            Vector3 newPos = Handles.FreeMoveHandle(_spline.Path[i], size, Vector3.zero, Handles.CylinderHandleCap);
+            Vector3 newPos = Handles.FreeMoveHandle(pathInfo.points[i], size, Vector3.zero, Handles.CylinderHandleCap);
 
-            if (newPos == _spline.Path[i])
+            if (newPos == pathInfo.points[i])
                 continue;
 
             if (_spline.custom.alwaysShowArrows)
                 RecalculateArrowBuffer();
             Undo.RecordObject(_spline, "Move Point Scene");
-            _spline.Path.MovePoint(i, newPos);
+            _spline.Path.MovePoint(i, _spline.transform.InverseTransformPoint(newPos));
 
         }
 
@@ -454,19 +450,20 @@ public class SplineEditor : Editor
             PaintRotationArrows();
     }
 
-    private void PaintRotation()
+    private void PaintRotation(PathInfo pathInfo)
     {
-        for (int i = 0; i < _spline.Path.NumRotations; i++)
+        for (int i = 0; i < pathInfo.rotations.Length; i++)
         {
             float size = 0.1f;
             Handles.color = _spline.custom.anchorColor;
-            Handles.FreeMoveHandle(_spline.Path[i * 3], size, Vector3.zero, Handles.CylinderHandleCap);
-            Quaternion newQuat = Handles.RotationHandle(_spline.Path.GetRotation(i), _spline.Path[i * 3]);
+            Handles.FreeMoveHandle(pathInfo.points[i * 3], size, Vector3.zero, Handles.CylinderHandleCap);
 
-            if (newQuat == _spline.Path.GetRotation(i))
+            Quaternion newQuat = Handles.RotationHandle(pathInfo.rotations[i], pathInfo.points[i * 3]);
+
+            if (newQuat == pathInfo.rotations[i])
                 continue;
             Undo.RecordObject(_spline, "Rotate Point Scene");
-            _spline.Path.RotatePoint(i, newQuat);
+            _spline.Path.RotatePoint(i, Quaternion.Inverse(_spline.transform.rotation) * newQuat);
         }
 
         PaintRotationArrows();
@@ -484,8 +481,9 @@ public class SplineEditor : Editor
                 float[] p = _spline.bufferedArrowDistribution[i];
                 for (int j = 0; j < p.Length; j++)
                 {
-                    Quaternion rot = _spline.CalculateRotation(i + p[j]);
-                    Vector3 pos = _spline.CalculatePosition(i + p[j]);
+                    Quaternion rot = _spline.CalculateRotationWorld(i + p[j]);
+                    Vector3 pos = _spline.CalculatePositionWorld(i + p[j]);
+
                     Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
                 }
             }
@@ -496,8 +494,9 @@ public class SplineEditor : Editor
         {
             for (int i = 0; i < arrowsDistribution; i++)
             {
-                Quaternion rot = _spline.CalculateRotation(j + i / arrowsDistribution);
-                Vector3 pos = _spline.CalculatePosition(j + i / arrowsDistribution);
+                Quaternion rot = _spline.CalculateRotationWorld(j + i / arrowsDistribution);
+                Vector3 pos = _spline.CalculatePositionWorld(j + i / arrowsDistribution);
+
                 Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
         }
