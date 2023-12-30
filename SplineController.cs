@@ -7,26 +7,6 @@ using UnityEngine.UIElements;
 
 public class SplineController : MonoBehaviour
 {
-#if UNITY_EDITOR
-    [HideInInspector]
-    public bool pathFoldOut = false;
-    [HideInInspector]
-    public bool rotationsFoldOut = false;
-    [HideInInspector]
-    public bool infoFoldOut = false;
-    [HideInInspector]
-    public bool checkpointsFoldOut = false;
-    [HideInInspector]
-    public bool isRotate = false;
-    [HideInInspector]
-    public SplineCustomizer custom;
-    [HideInInspector]
-    public bool customizerFoldOut = true;
-
-    [HideInInspector] 
-    public List<float[]> bufferedArrowDistribution = new();
-
-#endif
 
     /// <summary>
     /// The logic of the spline
@@ -151,6 +131,62 @@ public class SplineController : MonoBehaviour
         return length;
     }
 
-
     public override string ToString() => $"path: {Path}";
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public bool pathFoldOut = false;
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public bool rotationsFoldOut = false;
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public bool infoFoldOut = false;
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public bool checkpointsFoldOut = false;
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public bool isRotate = false;
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public SplineCustomizer custom;
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector]
+    public bool customizerFoldOut = true;
+    
+    /// <summary>
+    /// Editor field
+    /// </summary>
+    [HideInInspector] 
+    public List<float[]> bufferedArrowDistribution = new();
+
+    /// <summary>
+    /// Editor method
+    /// </summary>
+    public void RecalculateArrowBuffer()
+    {
+        bufferedArrowDistribution.Clear();
+        for (int i = 0; i < Path.NumSegments; i++)
+        {
+            bufferedArrowDistribution.Add(Path.GetBezierOfSegment(i).Transform(transform.localToWorldMatrix).EqualDistancePoints(custom.arrowDistance));
+        }
+    }
+
+#endif
 }

@@ -422,37 +422,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bad63f5f33f40c489063026d0793f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathFoldOut: 0
-  rotationsFoldOut: 0
-  infoFoldOut: 0
-  checkpointsFoldOut: 0
-  isRotate: 0
-  custom:
-    splineColor: {r: 0, g: 1, b: 0, a: 1}
-    selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    connectionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-    anchorColor: {r: 1, g: 0, b: 0, a: 1}
-    controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
-    arrowColor: {r: 0, g: 0, b: 0, a: 1}
-    arrowLength: 0.1
-    alwaysShowArrows: 1
-    useArrowDistanceDistribution: 0
-    arrowDistribution: 40
-    arrowDistance: 0.1
-  customizerFoldOut: 1
   path:
     points:
     - {x: -1, y: 0, z: 0}
-    - {x: -0.5, y: 0.5, z: 0}
-    - {x: 0.5, y: -0.5, z: 0}
-    - {x: 1, y: 0, z: 0}
+    - {x: -1.3695593, y: 0.7949832, z: 0}
+    - {x: -0.15842915, y: 1.1294678, z: 0}
+    - {x: 0.5767201, y: 1.1014158, z: 0}
+    - {x: 1.3118694, y: 1.0733637, z: 0}
+    - {x: 2.5124633, y: 0.87829614, z: 0}
+    - {x: 2, y: 0, z: 0}
+    - {x: 1.4875367, y: -0.87829614, z: 0}
+    - {x: -0.6304407, y: -0.7949832, z: 0}
     rotations:
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
     is2D: 1
-    isClosed: 0
+    isClosed: 1
     checkpoints:
-    - foldOut: 0
+    - foldOut: 1
       points:
       - {x: -1, y: 0, z: 0}
       - {x: -0.5, y: 0.5, z: 0}
@@ -463,6 +451,24 @@ MonoBehaviour:
       - {x: 0, y: 0, z: 0, w: 1}
       isClosed: 0
       is2D: 1
+  pathFoldOut: 1
+  rotationsFoldOut: 0
+  infoFoldOut: 1
+  checkpointsFoldOut: 1
+  isRotate: 0
+  custom:
+    splineColor: {r: 0, g: 1, b: 0, a: 1}
+    selectedColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    connectionColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+    anchorColor: {r: 1, g: 0, b: 0, a: 1}
+    controlColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    arrowColor: {r: 0, g: 0, b: 0, a: 1}
+    arrowLength: 0.1
+    alwaysShowArrows: 1
+    useArrowDistanceDistribution: 1
+    arrowDistribution: 40
+    arrowDistance: 0.1
+  customizerFoldOut: 1
 --- !u!1 &2130300495
 GameObject:
   m_ObjectHideFlags: 0
@@ -606,7 +612,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2130300495}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.2023435, y: -0.086, z: 4.971137}
+  m_LocalPosition: {x: -4.811, y: 0, z: 5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
