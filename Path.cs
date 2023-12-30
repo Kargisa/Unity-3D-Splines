@@ -46,7 +46,7 @@ public class Path
         };
 
         Is2D = true;
-        
+
         CreateCheckpoint();
     }
 
@@ -110,6 +110,12 @@ public class Path
     /// <param name="rotation">Rotation of the segment</param>
     public void AddSegment(Vector3 point, Quaternion rotation)
     {
+        if (IsClosed)
+        {
+            InsertSegment(NumSegments - 1, point, rotation);
+            return;
+        }
+
         if (Is2D)
         {
             points.Add((Vector2)(points[^1] * 2 - points[^2]));
@@ -130,23 +136,44 @@ public class Path
     /// </summary>
     public void AddSegment()
     {
-        Vector3 newPoint = points[^1] - ((points[^1] + points[^4]) * 0.5f) + points[^1];
-        AddSegment(newPoint, Quaternion.identity);
+        Vector3 newPoint;
+        Quaternion newQuad;
+
+        if (!IsClosed)
+        {
+            newPoint = points[^1] - ((points[^1] + points[^4]) * 0.5f) + points[^1];
+            newQuad = Quaternion.identity;
+        }
+        else
+        {
+            newPoint = (points[^2] + points[0]) / 2;
+            newQuad = Quaternion.Slerp(rotations[^1], rotations[0], 0.5f);
+        }
+
+        AddSegment(newPoint, newQuad);
     }
 
     /// <summary>
-    /// Insert a new segment at the index i and the position ps
+    /// Insert a new segment at the index i with a given position
     /// </summary>
     /// <param name="i">Index of the new segment</param>
     /// <param name="pos">Position of the new anchor of the segment</param>
-    public void InsertSegment(int i, Vector3 pos)
+    public void InsertSegment(int i, Vector3 pos) => InsertSegment(i, pos, Quaternion.Slerp(rotations[i], rotations[LoopRotationsIndex(i + 1)], 0.5f));
+
+    /// <summary>
+    /// Insert a new segment at the index i with a given position and rotation
+    /// </summary>
+    /// <param name="i">Index of the new segment</param>
+    /// <param name="pos">Position of the new anchor of the segment</param>
+    /// <param name="quad">Rotation of the new anchor of the segment</param>
+    public void InsertSegment(int i, Vector3 pos, Quaternion quad)
     {
         int index = i * 3 + 2;
         points.Insert(index, pos);
         points.Insert(index, pos);
         points.Insert(index, pos);
 
-        rotations.Insert(i + 1, Quaternion.Slerp(rotations[i], rotations[LoopRotationsIndex(i + 1)], 0.5f));
+        rotations.Insert(i + 1, quad);
 
     }
 
@@ -174,7 +201,7 @@ public class Path
         else
             points.RemoveRange(i - 1, 3);
 
-        rotations.RemoveAt(i/3);
+        rotations.RemoveAt(i / 3);
     }
 
     /// <summary>
