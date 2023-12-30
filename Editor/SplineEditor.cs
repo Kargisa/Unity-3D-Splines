@@ -21,13 +21,15 @@ public class SplineEditor : Editor
 
         _oldScale = _spline.transform.lossyScale;
 
-        RecalculateArrowBuffer();
-        Undo.undoRedoPerformed += RecalculateArrowBuffer;
+        if (_spline.custom.useArrowDistanceDistribution)
+            _spline.RecalculateArrowBuffer();
+
+        Undo.undoRedoPerformed += _spline.RecalculateArrowBuffer;
     }
 
     private void OnDisable()
     {
-        Undo.undoRedoPerformed -= RecalculateArrowBuffer;
+        Undo.undoRedoPerformed -= _spline.RecalculateArrowBuffer;
     }
 
     public override void OnInspectorGUI()
@@ -65,15 +67,28 @@ public class SplineEditor : Editor
 
     }
 
-    private void DrawOpenDocsButton()
+    /// <summary>
+    /// Draws a button in the inspector wich opens the documentation
+    /// </summary>
+    /// <returns>if the butten was pressed</returns>
+    private bool DrawOpenDocsButton()
     {
+
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
-        if (GUILayout.Button("Open Docs", EditorStyles.miniButtonRight, GUILayout.Width(80)))
+        
+        bool pressed = GUILayout.Button("Open Docs", EditorStyles.miniButtonRight, GUILayout.Width(80));
+        if (pressed)
             Application.OpenURL("http://poi-desk.at");
+        
         EditorGUILayout.EndHorizontal();
+
+        return pressed;
     }
 
+    /// <summary>
+    /// Draws a toggle in the inspector wich toggles the path between 2D and 3D
+    /// </summary>
     private void DrawToggleTo2D()
     {
         Undo.RecordObject(_spline, "Dimenson Change");
@@ -86,72 +101,119 @@ public class SplineEditor : Editor
             _spline.Path.Is2D = change;
     }
 
-    private void DrawIsClosed()
+    /// <summary>
+    /// Draws a button in the inspector wich adds a new segment to the path
+    /// </summary>
+    /// <returns>if the butten was pressed</returns>
+    private bool DrawAddSegmentButton()
     {
-        GUI.enabled = false;
-        _spline.Path.IsClosed = EditorGUILayout.Toggle("Is Closed", _spline.Path.IsClosed);
-        GUI.enabled = true;
-    }
-
-    private void DrawAddSegmentButton()
-    {
-        if (GUILayout.Button("Add Segment"))
+        bool pressed = GUILayout.Button("Add Segment");
+        if (pressed)
         {
             Undo.RecordObject(_spline, "Button Add Segment");
             _spline.Path.AddSegment();
+
+            if ((_spline.isRotate || _spline.custom.alwaysShowArrows) && _spline.custom.useArrowDistanceDistribution)
+                _spline.RecalculateArrowBuffer();
+
             SceneView.RepaintAll();
         }
+
+        return pressed;
     }
 
-    private void DrawToggleMoveButton()
+    /// <summary>
+    /// Draws a button in the inspector wich toggles the paths edit mode (rotate or move)
+    /// </summary>
+    /// <returns>the mode of the spline</returns>
+    private bool DrawToggleMoveButton()
     {
+        bool mode = _spline.isRotate;
         if (GUILayout.Button($"{(_spline.isRotate ? "Toggle to move" : "Toggle to rotate")}"))
         {
             _spline.isRotate = !_spline.isRotate;
+            mode = _spline.isRotate;
 
-            if (!_spline.custom.alwaysShowArrows)
-                RecalculateArrowBuffer();
-            
+            if (_spline.isRotate || (_spline.custom.alwaysShowArrows && !_spline.isRotate) && _spline.custom.useArrowDistanceDistribution)
+                _spline.RecalculateArrowBuffer();
+
             SceneView.RepaintAll();
         }
+
+        return mode;
     }
 
-    private void DrawClosePathToggle()
+    /// <summary>
+    /// Draws a toggle in the inspector wich toggles the paths closed state
+    /// </summary>
+    /// <returns>the close state of the path</returns>
+    private bool DrawClosePathToggle()
     {
+        bool state = _spline.Path.IsClosed;
         if (GUILayout.Button("Toggle Close"))
         {
             Undo.RecordObject(_spline, "Toggle Close");
-            _spline.Path.ToggleClosed();
+            state = _spline.Path.ToggleClosed();
+
+            if ((_spline.isRotate || _spline.custom.alwaysShowArrows) && _spline.custom.useArrowDistanceDistribution && state)
+                _spline.RecalculateArrowBuffer();
+
             SceneView.RepaintAll();
         }
+
+        return state;
     }
 
-    private void DrawLoadCheckpointButton()
+    /// <summary>
+    /// Draws a button in the inspector wich loads the last checkpoint created
+    /// </summary>
+    /// <returns>if the butten was pressed</returns>
+    private bool DrawLoadCheckpointButton()
     {
-        if (GUILayout.Button("Load Checkpoint"))
+        bool pressed = GUILayout.Button("Load Checkpoint");
+        if (pressed)
         {
             Undo.RecordObject(_spline, "Load Checkpoint");
             bool proceed = EditorUtility.DisplayDialog("LOAD CHECKPOINT", $"Load last checkpoint ({_spline.Path.Checkpoints.Count})?", "Preceed", "Cancel");
             if (proceed)
+            {
                 _spline.Path.LoadCheckpoint();
+
+                if ((_spline.custom.alwaysShowArrows || _spline.isRotate) && _spline.custom.useArrowDistanceDistribution)
+                    _spline.RecalculateArrowBuffer();
+            }
 
             SceneView.RepaintAll();
         }
+
+        return pressed;
     }
 
-    private void DrawCreateCheckpointButton()
+    /// <summary>
+    /// Draws a button in the inspector wich creates a checkpoint with the paths current state
+    /// </summary>
+    /// <returns>if the butten was pressed</returns>
+    private bool DrawCreateCheckpointButton()
     {
-        if (GUILayout.Button("Create Checkpoint"))
+        bool pressed = GUILayout.Button("Create Checkpoint");
+        if (pressed)
         {
             Undo.RecordObject(_spline, "Create Checkpoint");
             _spline.Path.CreateCheckpoint();
             EditorUtility.DisplayDialog("Checkpoint", $"Checkpoint {_spline.Path.Checkpoints.Count} created", "Ok", null);
         }
+
+        return pressed;
     }
 
-    private void DrawDeleteCheckpointButton()
+    /// <summary>
+    /// Draws a button in the inspector wich deletes the last checkpoint created
+    /// </summary>
+    /// <returns>if the butten was pressed</returns>
+    private bool DrawDeleteCheckpointButton()
     {
-        if (GUILayout.Button("Delete Checkpoint"))
+        bool pressed = GUILayout.Button("Delete Checkpoint");
+        if (pressed)
         {
             if (_spline.Path.Checkpoints.Count - 1 <= 0)
                 EditorUtility.DisplayDialog("No deletion", "Can not delete root checkpoint!", "Ok", null);
@@ -163,8 +225,14 @@ public class SplineEditor : Editor
                     _spline.Path.DeleteCheckpoint();
             }
         }
+
+        return pressed;
     }
 
+    /// <summary>
+    /// Draws all points of the path in the inspector (foldable)
+    /// </summary>
+    /// <param name="foldOut"></param>
     private void DrawPath(ref bool foldOut)
     {
         foldOut = EditorGUILayout.Foldout(foldOut, "Path");
@@ -175,13 +243,27 @@ public class SplineEditor : Editor
         {
             Vector3 oldPos = _spline.Path[i];
             Vector3 pos = EditorGUILayout.Vector3Field($"{(i % 3 == 0 ? $"Anchor {i / 3}" : $"Con {i}")}", _spline.Path[i]);
-            if (pos != oldPos)
+            if (pos != oldPos) 
+            { 
                 _spline.Path.MovePoint(i, pos);
+                if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
+                    _spline.RecalculateArrowBuffer();
+            }
+
+            if (i % 3 == 1)
+            {
+                DrawInsertButton((i - 1) / 3);
+            }
+
         }
         EditorGUI.indentLevel--;
         SceneView.RepaintAll();
     }
 
+    /// <summary>
+    /// Draws all rotations of the path in the inspector (flodable)
+    /// </summary>
+    /// <param name="foldOut"></param>
     private void DrawRotations(ref bool foldOut)
     {
         foldOut = EditorGUILayout.Foldout(foldOut, "Rotations");
@@ -200,6 +282,49 @@ public class SplineEditor : Editor
         SceneView.RepaintAll();
     }
 
+    /// <summary>
+    /// Draws a button in the inspectir wich inserts a segemnt at the given index
+    /// <br></br>
+    /// Position and rotation will be the average of the adjacent segments
+    /// </summary>
+    /// <param name="index">segment index</param>
+    /// <returns>if the butten was pressed</returns>
+    private bool DrawInsertButton(int index)
+    {
+        GUIStyle style = new(GUI.skin.button)
+        {
+            fontSize = 14,
+            fontStyle = FontStyle.Bold,
+            alignment = TextAnchor.LowerRight,
+        };
+        style.normal.textColor = Color.white;
+        GUIContent buttonContent = new(">", "Insert a segment here");
+
+        EditorGUILayout.BeginHorizontal();
+
+        bool pressed = GUILayout.Button(buttonContent, style, GUILayout.Width(20), GUILayout.Height(20));
+        
+        EditorGUILayout.EndHorizontal();
+        
+        if (pressed)
+        {
+            CubicBezier b = _spline.Path.GetBezierOfSegment(index);
+
+            Undo.RecordObject(_spline, "Insert Segment Button");
+            _spline.Path.InsertSegment(index, (b.p1 + b.p4) / 2);
+
+            if ((_spline.custom.alwaysShowArrows || _spline.isRotate) && _spline.custom.useArrowDistanceDistribution)
+                _spline.RecalculateArrowBuffer();
+
+            SceneView.RepaintAll();
+        }
+        
+        return pressed;
+    }
+
+    /// <summary>
+    /// Draws all fields in the splines custom 
+    /// </summary>
     private void DrawSplineCustomizer()
     {
         _spline.customizerFoldOut = EditorGUILayout.Foldout(_spline.customizerFoldOut, "Customizer");
@@ -210,6 +335,7 @@ public class SplineEditor : Editor
 
         EditorGUI.indentLevel++;
 
+
         custom.splineColor = EditorGUILayout.ColorField("Spline Color", custom.splineColor);
         custom.selectedColor = EditorGUILayout.ColorField("Selected Color", custom.selectedColor);
         custom.connectionColor = EditorGUILayout.ColorField("Connection Color", custom.connectionColor);
@@ -219,8 +345,10 @@ public class SplineEditor : Editor
 
         EditorGUILayout.Space();
 
+        bool oldShowArrows = custom.alwaysShowArrows;
         custom.alwaysShowArrows = EditorGUILayout.Toggle("Always Show Arrows", custom.alwaysShowArrows);
 
+        bool oldDist = custom.useArrowDistanceDistribution;
         custom.useArrowDistanceDistribution = EditorGUILayout.Toggle("Arrow Distance Distribution", custom.useArrowDistanceDistribution);
 
         EditorGUILayout.Space();
@@ -232,8 +360,8 @@ public class SplineEditor : Editor
             float oldDistance = custom.arrowDistance;
             custom.arrowDistance = EditorGUILayout.Slider("Arrow Distance", custom.arrowDistance, 0.05f, 1);
 
-            if (oldDistance != custom.arrowDistance && _spline.custom.alwaysShowArrows)
-                RecalculateArrowBuffer();
+            if ((oldDistance != custom.arrowDistance && (_spline.custom.alwaysShowArrows || _spline.isRotate)) || (!oldShowArrows && custom.alwaysShowArrows) || (!oldDist && custom.useArrowDistanceDistribution && (_spline.isRotate || custom.alwaysShowArrows)))
+                _spline.RecalculateArrowBuffer();
         }
         else
             custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", custom.arrowDistribution, 1, 250);
@@ -243,6 +371,10 @@ public class SplineEditor : Editor
         SceneView.RepaintAll();
     }
 
+    /// <summary>
+    /// Draws non editable information about the path in the inspector (foldable)
+    /// </summary>
+    /// <param name="infoFoldOut"></param>
     private void Info(ref bool infoFoldOut)
     {
         infoFoldOut = EditorGUILayout.Foldout(infoFoldOut, "Info");
@@ -256,6 +388,20 @@ public class SplineEditor : Editor
 
     }
 
+    /// <summary>
+    /// Darws a toggle in the inspector wich shows the close state of the path
+    /// </summary>
+    private void DrawIsClosed()
+    {
+        GUI.enabled = false;
+        EditorGUILayout.Toggle("Is Closed", _spline.Path.IsClosed);
+        GUI.enabled = true;
+    }
+    
+    /// <summary>
+    /// Draws all checkpoints non editable in the inspector (foldable)
+    /// </summary>
+    /// <param name="checkpointsFoldOut"></param>
     private void DrawCheckpoints(ref bool checkpointsFoldOut)
     {
         checkpointsFoldOut = EditorGUILayout.Foldout(checkpointsFoldOut, "Checkpoints");
@@ -297,12 +443,15 @@ public class SplineEditor : Editor
         EditorGUI.indentLevel--;
     }
 
+    /// <summary>
+    /// Recalculates the arrow buffer on the splines lossyScale changed
+    /// </summary>
     private void CheckForScaleChange()
     {
-        if (_oldScale != _spline.transform.lossyScale)
+        if (_oldScale != _spline.transform.lossyScale && _spline.custom.useArrowDistanceDistribution)
         {
             _oldScale = _spline.transform.lossyScale;
-            RecalculateArrowBuffer();
+            _spline.RecalculateArrowBuffer();
         }
     }
 
@@ -322,6 +471,9 @@ public class SplineEditor : Editor
 
     }
 
+    /// <summary>
+    /// Tracks all inputs for the scene editor
+    /// </summary>
     private void Input()
     {
         Event guiEvent = Event.current;
@@ -367,14 +519,15 @@ public class SplineEditor : Editor
             }
         }
 
-        // inserts a segment at the mouse position on the spline (only in 2D)
+        
+        // Inserts a segment at the mouse position on the spline (only in 2D)
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1 && _spline.Path.Is2D)
         {
             Undo.RecordObject(_spline, "Insert Segment");
             _spline.Path.InsertSegment(_selectedSegment, _spline.transform.InverseTransformPoint(_mousePosOnPlane));
 
-            if (_spline.custom.alwaysShowArrows)
-                RecalculateArrowBuffer();
+            if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
+                _spline.RecalculateArrowBuffer();
         }
 
         // Adds a segment at the mouse position (only for 2D)
@@ -382,9 +535,12 @@ public class SplineEditor : Editor
         {
             Undo.RecordObject(_spline, "Add Segment");
             _spline.Path.AddSegment(mousPos, Quaternion.identity);
+
+            if ((_spline.isRotate || _spline.custom.alwaysShowArrows) && _spline.custom.useArrowDistanceDistribution)
+                _spline.RecalculateArrowBuffer();
         }
 
-        // removes a segment at the mouse position
+        // Removes a segment at the mouse position
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 1 && guiEvent.control)
         {
             float distToAnchor = 0.05f;
@@ -406,12 +562,16 @@ public class SplineEditor : Editor
                 Undo.RecordObject(_spline, "Remove Segment");
                 _spline.Path.DeleteSegment(closestAnchorIndex);
 
-                if (_spline.custom.alwaysShowArrows)
-                    RecalculateArrowBuffer();
+                if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
+                    _spline.RecalculateArrowBuffer();
             }
         }
     }
 
+    /// <summary>
+    /// Paints the spline on the scene
+    /// </summary>
+    /// <param name="isRotate">Is the spline in rotation mode</param>
     private void Paint(bool isRotate)
     {
         for (int i = 0; i < _spline.Path.NumSegments; i++)
@@ -434,9 +594,13 @@ public class SplineEditor : Editor
             PaintRotation(info);
         else
             PaintMove(info);
-        
+
     }
 
+    /// <summary>
+    /// Paints the move mode in the editor
+    /// </summary>
+    /// <param name="pathInfo">Information about the path</param>
     private void PaintMove(PathInfo pathInfo)
     {
         for (int i = 0; i < pathInfo.points.Length; i++)
@@ -448,8 +612,8 @@ public class SplineEditor : Editor
             if (newPos == pathInfo.points[i])
                 continue;
 
-            if (_spline.custom.alwaysShowArrows)
-                RecalculateArrowBuffer();
+            if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
+                _spline.RecalculateArrowBuffer();
             Undo.RecordObject(_spline, "Move Point Scene");
             _spline.Path.MovePoint(i, _spline.transform.InverseTransformPoint(newPos));
 
@@ -459,26 +623,34 @@ public class SplineEditor : Editor
             PaintRotationArrows();
     }
 
+    /// <summary>
+    /// Paints the rotzation mode in the editor
+    /// </summary>
+    /// <param name="pathInfo">Information about the path</param>
     private void PaintRotation(PathInfo pathInfo)
     {
+        Handles.color = _spline.custom.anchorColor;
+        float size = 0.1f;
         for (int i = 0; i < pathInfo.rotations.Length; i++)
         {
-            float size = 0.1f;
-            Handles.color = _spline.custom.anchorColor;
             Handles.FreeMoveHandle(pathInfo.points[i * 3], size, Vector3.zero, Handles.CylinderHandleCap);
 
             Quaternion newQuat = Handles.RotationHandle(pathInfo.rotations[i], pathInfo.points[i * 3]);
 
             if (newQuat == pathInfo.rotations[i])
                 continue;
+            
             Undo.RecordObject(_spline, "Rotate Point Scene");
             _spline.Path.RotatePoint(i, Quaternion.Inverse(_spline.transform.rotation) * newQuat);
         }
-
+        
         PaintRotationArrows();
 
     }
 
+    /// <summary>
+    /// Paints the rotation arrows on the spline
+    /// </summary>
     private void PaintRotationArrows()
     {
         Handles.color = _spline.custom.arrowColor;
@@ -498,7 +670,7 @@ public class SplineEditor : Editor
             }
             return;
         }
-        
+
         float arrowsDistribution = _spline.custom.arrowDistribution;
         for (int j = 0; j < _spline.Path.NumSegments; j++)
         {
@@ -509,15 +681,6 @@ public class SplineEditor : Editor
 
                 Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
-        }
-    }
-
-    private void RecalculateArrowBuffer()
-    {
-        _spline.bufferedArrowDistribution.Clear();
-        for (int i = 0; i < _spline.Path.NumSegments; i++)
-        {
-            _spline.bufferedArrowDistribution.Add(_spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix).EqualDistancePoints(_spline.custom.arrowDistance));
         }
     }
 

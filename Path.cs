@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 /// <summary>
 /// Defines a path for a spline in <b>local space</b>
@@ -147,6 +147,7 @@ public class Path
         points.Insert(index, pos);
 
         rotations.Insert(i + 1, Quaternion.Slerp(rotations[i], rotations[LoopRotationsIndex(i + 1)], 0.5f));
+
     }
 
     /// <summary>
@@ -239,7 +240,7 @@ public class Path
     /// <summary>
     /// Toggles path open and closed
     /// </summary>
-    public void ToggleClosed()
+    public bool ToggleClosed()
     {
         if (isClosed)
         {
@@ -260,6 +261,7 @@ public class Path
         }
 
         isClosed = !isClosed;
+        return isClosed;
     }
 
     private int LoopPointsIndex(int i) => IndexHelper.LoopIndex(i, points.Count);
