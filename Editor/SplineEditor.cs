@@ -78,11 +78,11 @@ public class SplineEditor : Editor
 
         EditorGUILayout.BeginHorizontal();
         GUILayout.FlexibleSpace();
-        
+
         bool pressed = GUILayout.Button("Open Docs", EditorStyles.miniButtonRight, GUILayout.Width(80));
         if (pressed)
             Application.OpenURL("http://poi-desk.at");
-        
+
         EditorGUILayout.EndHorizontal();
 
         return pressed;
@@ -178,6 +178,7 @@ public class SplineEditor : Editor
             Undo.RecordObject(_spline, "Load Checkpoint");
             bool proceed = EditorUtility.DisplayDialog("LOAD CHECKPOINT", $"Load last checkpoint ({_spline.Checkpoints.Count})?", "Preceed", "Cancel");
             if (proceed)
+            {
                 _spline.LoadCheckpoint();
 
                 if ((_spline.custom.alwaysShowArrows || _spline.isRotate) && _spline.custom.useArrowDistanceDistribution)
@@ -244,8 +245,8 @@ public class SplineEditor : Editor
         {
             Vector3 oldPos = _spline.Path[i];
             Vector3 pos = EditorGUILayout.Vector3Field($"{(i % 3 == 0 ? $"Anchor {i / 3}" : $"Con {i}")}", _spline.Path[i]);
-            if (pos != oldPos) 
-            { 
+            if (pos != oldPos)
+            {
                 _spline.Path.MovePoint(i, pos);
                 if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
                     _spline.RecalculateArrowBuffer();
@@ -304,9 +305,9 @@ public class SplineEditor : Editor
         EditorGUILayout.BeginHorizontal();
 
         bool pressed = GUILayout.Button(buttonContent, style, GUILayout.Width(20), GUILayout.Height(20));
-        
+
         EditorGUILayout.EndHorizontal();
-        
+
         if (pressed)
         {
             CubicBezier b = _spline.Path.GetBezierOfSegment(index);
@@ -319,7 +320,7 @@ public class SplineEditor : Editor
 
             SceneView.RepaintAll();
         }
-        
+
         return pressed;
     }
 
@@ -398,7 +399,7 @@ public class SplineEditor : Editor
         EditorGUILayout.Toggle("Is Closed", _spline.Path.IsClosed);
         GUI.enabled = true;
     }
-    
+
     /// <summary>
     /// Draws all checkpoints non editable in the inspector (foldable)
     /// </summary>
@@ -458,7 +459,6 @@ public class SplineEditor : Editor
 
     private void OnSceneGUI()
     {
-
         Input(); //Input befor Paint
         Paint(_spline.isRotate);
 
@@ -520,7 +520,7 @@ public class SplineEditor : Editor
             }
         }
 
-        
+
         // Inserts a segment at the mouse position on the spline (only in 2D)
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1 && _spline.Path.Is2D)
         {
@@ -640,11 +640,11 @@ public class SplineEditor : Editor
 
             if (newQuat == pathInfo.rotations[i])
                 continue;
-            
+
             Undo.RecordObject(_spline, "Rotate Point Scene");
             _spline.Path.RotatePoint(i, Quaternion.Inverse(_spline.transform.rotation) * newQuat);
         }
-        
+
         PaintRotationArrows();
 
     }
@@ -655,7 +655,6 @@ public class SplineEditor : Editor
     private void PaintRotationArrows()
     {
         Handles.color = _spline.custom.arrowColor;
-
         if (_spline.custom.useArrowDistanceDistribution)
         {
             for (int i = 0; i < _spline.bufferedArrowDistribution.Count; i++)
@@ -663,8 +662,8 @@ public class SplineEditor : Editor
                 float[] p = _spline.bufferedArrowDistribution[i];
                 for (int j = 0; j < p.Length; j++)
                 {
-                    Quaternion rot = _spline.GetRotation(i + p[j]);
-                    Vector3 pos = _spline.GetPosition(i + p[j]);
+                    Quaternion rot = _spline.GetRotationWorld(i + p[j]);
+                    Vector3 pos = _spline.GetPositionWorld(i + p[j]);
                     Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
                 }
             }
@@ -676,8 +675,8 @@ public class SplineEditor : Editor
         {
             for (int i = 0; i < arrowsDistribution; i++)
             {
-                Quaternion rot = _spline.GetRotation(j + i / arrowsDistribution);
-                Vector3 pos = _spline.GetPosition(j + i / arrowsDistribution);
+                Quaternion rot = _spline.GetRotationWorld(j + i / arrowsDistribution);
+                Vector3 pos = _spline.GetPositionWorld(j + i / arrowsDistribution);
                 Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
         }

@@ -226,48 +226,6 @@ public class SplineController : MonoBehaviour
 
 #if UNITY_EDITOR
     /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public bool pathFoldOut = false;
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public bool rotationsFoldOut = false;
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public bool infoFoldOut = false;
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public bool checkpointsFoldOut = false;
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public bool isRotate = false;
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public SplineCustomizer custom;
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector]
-    public bool customizerFoldOut = true;
-    
-    /// <summary>
-    /// Editor field
-    /// </summary>
-    [HideInInspector] 
-    public List<float[]> bufferedArrowDistribution = new();
-
-    /// <summary>
     /// Editor method
     /// </summary>
     public void RecalculateArrowBuffer()
