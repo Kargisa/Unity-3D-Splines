@@ -37,6 +37,8 @@ public class SplineEditor : Editor
         base.OnInspectorGUI();
         DrawOpenDocsButton();
 
+        _spline.IsStatic = EditorGUILayout.Toggle("Static", _spline.IsStatic);
+
         EditorGUILayout.Space();
 
         DrawToggleTo2D();
@@ -174,10 +176,9 @@ public class SplineEditor : Editor
         if (pressed)
         {
             Undo.RecordObject(_spline, "Load Checkpoint");
-            bool proceed = EditorUtility.DisplayDialog("LOAD CHECKPOINT", $"Load last checkpoint ({_spline.Path.Checkpoints.Count})?", "Preceed", "Cancel");
+            bool proceed = EditorUtility.DisplayDialog("LOAD CHECKPOINT", $"Load last checkpoint ({_spline.Checkpoints.Count})?", "Preceed", "Cancel");
             if (proceed)
-            {
-                _spline.Path.LoadCheckpoint();
+                _spline.LoadCheckpoint();
 
                 if ((_spline.custom.alwaysShowArrows || _spline.isRotate) && _spline.custom.useArrowDistanceDistribution)
                     _spline.RecalculateArrowBuffer();
@@ -199,8 +200,8 @@ public class SplineEditor : Editor
         if (pressed)
         {
             Undo.RecordObject(_spline, "Create Checkpoint");
-            _spline.Path.CreateCheckpoint();
-            EditorUtility.DisplayDialog("Checkpoint", $"Checkpoint {_spline.Path.Checkpoints.Count} created", "Ok", null);
+            _spline.CreateCheckpoint();
+            EditorUtility.DisplayDialog("Checkpoint", $"Checkpoint {_spline.Checkpoints.Count} created", "Ok", null);
         }
 
         return pressed;
@@ -215,14 +216,14 @@ public class SplineEditor : Editor
         bool pressed = GUILayout.Button("Delete Checkpoint");
         if (pressed)
         {
-            if (_spline.Path.Checkpoints.Count - 1 <= 0)
+            if (_spline.Checkpoints.Count - 1 <= 0)
                 EditorUtility.DisplayDialog("No deletion", "Can not delete root checkpoint!", "Ok", null);
             else
             {
                 Undo.RecordObject(_spline, "Delete Checkpoint");
-                bool proceed = EditorUtility.DisplayDialog("DELETE CHECKPOINT", $"Delete Checkpoint {_spline.Path.Checkpoints.Count}!", "Proceed", "Cancel");
+                bool proceed = EditorUtility.DisplayDialog("DELETE CHECKPOINT", $"Delete Checkpoint {_spline.Checkpoints.Count}!", "Proceed", "Cancel");
                 if (proceed)
-                    _spline.Path.DeleteCheckpoint();
+                    _spline.DeleteCheckpoint();
             }
         }
 
@@ -409,24 +410,24 @@ public class SplineEditor : Editor
             return;
 
         EditorGUI.indentLevel++;
-        for (int i = 0; i < _spline.Path.Checkpoints.Count; i++)
+        for (int i = 0; i < _spline.Checkpoints.Count; i++)
         {
-            _spline.Path.Checkpoints[i].foldOut = EditorGUILayout.Foldout(_spline.Path.Checkpoints[i].foldOut, $"Checkpoint {i + 1}");
-            if (!_spline.Path.Checkpoints[i].foldOut)
+            _spline.Checkpoints[i].foldOut = EditorGUILayout.Foldout(_spline.Checkpoints[i].foldOut, $"Checkpoint {i + 1}");
+            if (!_spline.Checkpoints[i].foldOut)
                 continue;
 
             GUI.enabled = false;
-            EditorGUILayout.Toggle("Is Closed", _spline.Path.Checkpoints[i].isClosed);
-            EditorGUILayout.Toggle("Is 2D", _spline.Path.Checkpoints[i].is2D);
+            EditorGUILayout.Toggle("Is Closed", _spline.Checkpoints[i].isClosed);
+            EditorGUILayout.Toggle("Is 2D", _spline.Checkpoints[i].is2D);
             GUI.enabled = true;
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Points", EditorStyles.boldLabel);
 
             GUI.enabled = false;
-            for (int j = 0; j < _spline.Path.Checkpoints[i].points.Count; j++)
+            for (int j = 0; j < _spline.Checkpoints[i].points.Count; j++)
             {
-                EditorGUILayout.Vector3Field($"{(j % 3 == 0 ? $"Anchor {j / 3}" : $"Con {j}")}", _spline.Path.Checkpoints[i].points[j]);
+                EditorGUILayout.Vector3Field($"{(j % 3 == 0 ? $"Anchor {j / 3}" : $"Con {j}")}", _spline.Checkpoints[i].points[j]);
             }
             GUI.enabled = true;
 
@@ -434,9 +435,9 @@ public class SplineEditor : Editor
             EditorGUILayout.LabelField("Rotations", EditorStyles.boldLabel);
 
             GUI.enabled = false;
-            for (int j = 0; j < _spline.Path.Checkpoints[i].rotations.Count; j++)
+            for (int j = 0; j < _spline.Checkpoints[i].rotations.Count; j++)
             {
-                EditorGUILayout.Vector3Field($"Rot {j}", _spline.Path.Checkpoints[i].rotations[j].eulerAngles);
+                EditorGUILayout.Vector3Field($"Rot {j}", _spline.Checkpoints[i].rotations[j].eulerAngles);
             }
             GUI.enabled = true;
         }
@@ -662,9 +663,8 @@ public class SplineEditor : Editor
                 float[] p = _spline.bufferedArrowDistribution[i];
                 for (int j = 0; j < p.Length; j++)
                 {
-                    Quaternion rot = _spline.CalculateRotationWorld(i + p[j]);
-                    Vector3 pos = _spline.CalculatePositionWorld(i + p[j]);
-
+                    Quaternion rot = _spline.GetRotation(i + p[j]);
+                    Vector3 pos = _spline.GetPosition(i + p[j]);
                     Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
                 }
             }
@@ -676,9 +676,8 @@ public class SplineEditor : Editor
         {
             for (int i = 0; i < arrowsDistribution; i++)
             {
-                Quaternion rot = _spline.CalculateRotationWorld(j + i / arrowsDistribution);
-                Vector3 pos = _spline.CalculatePositionWorld(j + i / arrowsDistribution);
-
+                Quaternion rot = _spline.GetRotation(j + i / arrowsDistribution);
+                Vector3 pos = _spline.GetPosition(j + i / arrowsDistribution);
                 Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
             }
         }

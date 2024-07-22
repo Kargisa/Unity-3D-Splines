@@ -21,18 +21,8 @@ public class Path
     [SerializeField, HideInInspector]
     private bool isClosed;
 
-    [SerializeField, HideInInspector]
-    private List<PathCheckpoint> checkpoints;
-
-    /// <summary>
-    /// All checkpoints created on the path
-    /// </summary>
-    public List<PathCheckpoint> Checkpoints { get => checkpoints; }
-
-
     public Path(Vector3 center)
     {
-        checkpoints = new List<PathCheckpoint>();
         points = new List<Vector3>() {
             center + Vector3.left,
             center + (Vector3.left + Vector3.up) * 0.5f,
@@ -46,8 +36,6 @@ public class Path
         };
 
         Is2D = true;
-
-        CreateCheckpoint();
     }
 
     /// <returns>Point in local space at index <c>i</c></returns>
@@ -56,6 +44,10 @@ public class Path
         get => points[i];
         set { points[i] = value; }
     }
+
+    public List<Vector3> Points => points;
+
+    public List<Quaternion> Rotations => rotations;
 
     public float Length { get => GetLength(); }
 
@@ -70,14 +62,9 @@ public class Path
     /// </summary>
     public bool IsNull { get => points == null; }
 
-    /// <summary>
-    /// The last added checkpoint
-    /// </summary>
-    public PathCheckpoint LastCheckPoint { get => checkpoints[^1]; }
-
     public bool Is2D
     {
-        get { return is2D; }
+        get => is2D;
         set
         {
             if (value)
@@ -205,64 +192,10 @@ public class Path
     }
 
     /// <summary>
-    /// Loads the last checkpoint created
-    /// </summary>
-    public void LoadCheckpoint()
-    {
-        points = LastCheckPoint.points.ToList();
-        rotations = LastCheckPoint.rotations.ToList();
-        isClosed = LastCheckPoint.isClosed;
-        is2D = LastCheckPoint.is2D;
-    }
-
-    /// <summary>
-    /// Loads the checkpoint at the given index
-    /// </summary>
-    public void LoadCheckpoint(int i)
-    {
-        points = checkpoints[i].points.ToList();
-        rotations = checkpoints[i].rotations.ToList();
-        isClosed = checkpoints[i].isClosed;
-        is2D = checkpoints[i].is2D;
-    }
-
-    /// <summary>
-    /// Creates a new checkpoint with the current values
-    /// </summary>
-    public void CreateCheckpoint()
-    {
-        checkpoints.Add(new PathCheckpoint(points.ToList(), rotations.ToList(), isClosed, is2D));
-    }
-
-    /// <summary>
-    /// Deletes the last checkpoint created
-    /// </summary>
-    /// <returns>success or fail (eg. delete last checkpoint = fail)</returns>
-    public bool DeleteCheckpoint()
-    {
-        if (checkpoints.Count - 1 <= 0)
-            return false;
-        checkpoints.RemoveAt(checkpoints.Count - 1);
-        return true;
-    }
-
-    /// <summary>
-    /// Deletes the checkpoint at the given index
-    /// </summary>
-    /// <returns>success or fail (eg. delete last checkpoint = fail)</returns>
-    public bool DeleteCheckpoint(int i)
-    {
-        if (checkpoints.Count - 1 <= 0)
-            return false;
-        checkpoints.RemoveAt(i);
-        return true;
-    }
-
-    /// <summary>
     /// Gets the cubic bezier of the segment at the index i
     /// </summary>
     /// <param name="index">index of the segment</param>
-    public CubicBezier GetBezierOfSegment(int index) => new CubicBezier(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopPointsIndex(index * 3 + 3)], rotations[index], rotations[LoopRotationsIndex(index + 1)]);
+    public CubicBezier GetBezierOfSegment(int index) => new(points[index * 3], points[index * 3 + 1], points[index * 3 + 2], points[LoopPointsIndex(index * 3 + 3)], rotations[index], rotations[LoopRotationsIndex(index + 1)]);
 
     /// <summary>
     /// Toggles path open and closed
@@ -403,7 +336,7 @@ public class Path
 
     public override string ToString()
     {
-        return $"points: {NumPoints}, segments: {NumSegments}, rotations {NumRotations}, checkpoints: {checkpoints.Count}";
+        return $"points: {NumPoints}, segments: {NumSegments}, rotations: {NumRotations}";
     }
 }
 
