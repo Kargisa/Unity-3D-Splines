@@ -13,7 +13,7 @@ public struct CubicBezier : IBezier, IBezierAuto, IFormattable
     public Quaternion r1 { get; set; }
     public Quaternion r2 { get; set; }
     public readonly float Length => GetEstimatedLength();
-    public readonly int ResPerMeter => 100;
+    public readonly int ResPerMeter => 75;
 
 
     public CubicBezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, Quaternion r1, Quaternion r2)
