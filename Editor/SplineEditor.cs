@@ -1,5 +1,7 @@
+using GluonGui;
 using System;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -38,6 +40,14 @@ public class SplineEditor : Editor
         DrawOpenDocsButton();
 
         _spline.IsStatic = EditorGUILayout.Toggle("Static", _spline.IsStatic);
+        if (_spline.IsStatic)
+        {
+            GUI.enabled = !_spline.baking;
+            if (GUILayout.Button("Bake Length"))
+                _spline.BakeLength();
+            GUI.enabled = true;
+        }
+
 
         EditorGUILayout.Space();
 
@@ -53,9 +63,19 @@ public class SplineEditor : Editor
 
         EditorGUILayout.Space();
 
-        DrawCreateCheckpointButton();
-        DrawLoadCheckpointButton();
-        DrawDeleteCheckpointButton();
+        _spline.checkpointsFoldOut = EditorGUILayout.Foldout(_spline.checkpointsFoldOut, "Checkpoints");
+        if (_spline.checkpointsFoldOut)
+        {
+            EditorGUI.indentLevel++;
+            DrawCreateCheckpointButton();
+            DrawLoadCheckpointButton();
+            DrawDeleteCheckpointButton();
+
+            EditorGUILayout.Space();
+
+            Info(ref _spline.infoFoldOut);
+            EditorGUI.indentLevel--;
+        }
 
         EditorGUILayout.Space();
 
@@ -65,7 +85,6 @@ public class SplineEditor : Editor
 
         CheckForScaleChange();
 
-        Info(ref _spline.infoFoldOut);
 
     }
 
@@ -385,7 +404,7 @@ public class SplineEditor : Editor
 
         EditorGUI.indentLevel++;
         DrawIsClosed();
-        DrawCheckpoints(ref _spline.checkpointsFoldOut);
+        DrawCheckpoints();
         EditorGUI.indentLevel--;
 
     }
@@ -404,13 +423,8 @@ public class SplineEditor : Editor
     /// Draws all checkpoints non editable in the inspector (foldable)
     /// </summary>
     /// <param name="checkpointsFoldOut"></param>
-    private void DrawCheckpoints(ref bool checkpointsFoldOut)
+    private void DrawCheckpoints()
     {
-        checkpointsFoldOut = EditorGUILayout.Foldout(checkpointsFoldOut, "Checkpoints");
-        if (!checkpointsFoldOut)
-            return;
-
-        EditorGUI.indentLevel++;
         for (int i = 0; i < _spline.Checkpoints.Count; i++)
         {
             _spline.Checkpoints[i].foldOut = EditorGUILayout.Foldout(_spline.Checkpoints[i].foldOut, $"Checkpoint {i + 1}");
@@ -442,7 +456,6 @@ public class SplineEditor : Editor
             }
             GUI.enabled = true;
         }
-        EditorGUI.indentLevel--;
     }
 
     /// <summary>
@@ -614,10 +627,7 @@ public class SplineEditor : Editor
                 continue;
 
             if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
-            {
                 _spline.RecalculateArrowBuffer();
-                SceneView.RepaintAll();
-            }
 
             Undo.RecordObject(_spline, "Move Point Scene");
             _spline.Path.MovePoint(i, _spline.transform.InverseTransformPoint(newPos));
@@ -658,6 +668,8 @@ public class SplineEditor : Editor
     /// </summary>
     private void PaintRotationArrows()
     {
+        Camera cam = Camera.current;
+
         Handles.color = _spline.custom.arrowColor;
         if (_spline.custom.useArrowDistanceDistribution)
         {
@@ -668,7 +680,13 @@ public class SplineEditor : Editor
                 {
                     Quaternion rot = _spline.GetRotationWorld(i + p[j]);
                     Vector3 pos = _spline.GetPositionWorld(i + p[j]);
-                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                    if ((cam.transform.position - pos).sqrMagnitude < 100)
+                    {
+                        Vector3 viewPos = cam.WorldToViewportPoint(pos);
+                        if (viewPos.x < 0 || viewPos.x > 1 || viewPos.y < 0 || viewPos.y > 1 || viewPos.z < 0)
+                            continue;
+                        Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                    }
                 }
             }
             return;
@@ -681,7 +699,13 @@ public class SplineEditor : Editor
             {
                 Quaternion rot = _spline.GetRotationWorld(j + i / arrowsDistribution);
                 Vector3 pos = _spline.GetPositionWorld(j + i / arrowsDistribution);
-                Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                if ((cam.transform.position - pos).sqrMagnitude < 100)
+                {
+                    Vector3 viewPos = cam.WorldToViewportPoint(pos);
+                    if (viewPos.x < 0 || viewPos.x > 1 || viewPos.y < 0 || viewPos.y > 1 || viewPos.z < 0)
+                        continue;
+                    Handles.ArrowHandleCap(i, pos, rot, _spline.custom.arrowLength, EventType.Repaint);
+                }
             }
         }
     }

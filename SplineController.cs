@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -28,7 +29,7 @@ public class SplineController : MonoBehaviour
 
 #endif
     [SerializeField, HideInInspector]
-    private bool isStatic;
+    private bool isStatic = true;
 
     public bool IsStatic
     {
@@ -46,6 +47,8 @@ public class SplineController : MonoBehaviour
 
     private float _length;
 
+    public float Length => GetLength();
+
     /// <summary>
     /// All checkpoints created on the path
     /// </summary>
@@ -61,11 +64,6 @@ public class SplineController : MonoBehaviour
 
     private void Start()
     {
-        if (IsStatic)
-        {
-            _length = GetLength();
-        }
-
         /*
          * Resolutions per meter
          * 
@@ -154,7 +152,7 @@ public class SplineController : MonoBehaviour
     /// </summary> 
     /// <param name="resolution">The resolution for each Bezier</param>
     /// <returns>the length of the spline</returns>
-    public float GetLength(int resolution) => GetLength(resolution);
+    public float GetLength(int resolution) => Path.GetLength(resolution);
 
     /// <summary>
     /// Automatically calculates the length of the spline
@@ -239,11 +237,19 @@ public class SplineController : MonoBehaviour
     {
         CancellationTokenSource source = new();
         CancellationToken token = source.Token;
-        _tokenSources.Add(source);
 
         var task = Task.Factory.StartNew((state) =>
         {
             Matrix4x4 matrix = (Matrix4x4)state;
+
+            foreach (var tSource in _tokenSources)
+            {
+                if (tSource.Token == token)
+                    continue;
+                tSource.Cancel();
+            }
+            _tokenSources.Clear();
+            _tokenSources.Add(source);
 
             if (token.IsCancellationRequested) return;
             lock (_bufferLock)
@@ -251,13 +257,6 @@ public class SplineController : MonoBehaviour
                 if (token.IsCancellationRequested) return;
                 List<float[]> current = new();
 
-                foreach (var tSource in _tokenSources)
-                {
-                    if (tSource.Token == token)
-                        continue;
-                    tSource.Cancel();
-                }
-                _tokenSources.Clear();
 
                 for (int i = 0; i < Path.NumSegments; i++)
                 {
@@ -269,6 +268,33 @@ public class SplineController : MonoBehaviour
                 bufferedArrowDistribution = current;
             }
         }, transform.localToWorldMatrix, source.Token);
+    }
+
+    [HideInInspector]
+    public bool baking = false;
+
+    private readonly object _bakeLock = new();
+
+    public void BakeLength()
+    {
+        if (!IsStatic || baking) return;
+        baking = true;
+
+        Task.Run(() =>
+        {
+            lock (_bakeLock)
+            {
+                int[] reses = new int[Path.NumSegments];
+                for (int i = 0; i < Path.NumSegments; i++)
+                {
+                    reses[i] = Mathf.CeilToInt(Path.GetBezierOfSegment(i).Length) * 1000;
+                }
+
+                _length = Path.GetLength(reses);
+                Debug.Log($"Baking finished with a length of {_length} units!");
+                baking = false;
+            }
+        });
     }
 
 #endif

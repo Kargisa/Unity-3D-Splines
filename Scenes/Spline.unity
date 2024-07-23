@@ -403,7 +403,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229239434}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2.221}
+  m_LocalPosition: {x: 0, y: -0.24, z: 5.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -422,10 +422,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bad63f5f33f40c489063026d0793f7b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathFoldOut: 1
+  pathFoldOut: 0
   rotationsFoldOut: 0
   infoFoldOut: 1
-  checkpointsFoldOut: 0
+  checkpointsFoldOut: 1
   isRotate: 0
   custom:
     splineColor: {r: 0, g: 1, b: 0, a: 1}
@@ -439,25 +439,39 @@ MonoBehaviour:
     useArrowDistanceDistribution: 1
     arrowDistribution: 40
     arrowDistance: 0.1
-  customizerFoldOut: 1
-  isStatic: 0
+  customizerFoldOut: 0
+  isStatic: 1
   path:
     points:
-    - {x: -1, y: 0, z: 0}
-    - {x: -0.5, y: 0.5, z: 0}
-    - {x: 45.0658, y: 8.950799, z: 0}
-    - {x: 45.65125, y: 9.031067, z: 0}
-    - {x: 46.2367, y: 9.111335, z: 0}
-    - {x: 46.075974, y: 8.607413, z: 0}
-    - {x: 46.574085, y: 8.836269, z: 0}
+    - {x: -97.57063, y: 11.9421625, z: 0}
+    - {x: -28.282452, y: 27.411911, z: 0}
+    - {x: -46.933693, y: -9.806814, z: 0}
+    - {x: -1.6861492, y: -9.55684, z: 0}
+    - {x: 43.561394, y: -9.306866, z: 0}
+    - {x: 1.1478295, y: 13.865106, z: 0}
+    - {x: 6.6510696, y: 14.205374, z: 0}
+    - {x: 12.15431, y: 14.545642, z: 0}
+    - {x: 17.146383, y: 23.524412, z: 0}
+    - {x: 33.95627, y: 9.668026, z: 0}
+    - {x: 50.76615, y: -4.18836, z: 0}
+    - {x: 75.32563, y: -40.02023, z: 0}
+    - {x: 6.769454, y: -33.213444, z: 0}
+    - {x: -61.78672, y: -26.406658, z: 0}
+    - {x: -55.2359, y: -85.876175, z: 0}
+    - {x: -134.23703, y: -51.569897, z: 0}
+    - {x: -213.23816, y: -17.263618, z: 0}
+    - {x: -166.85915, y: -3.5276031, z: 0}
     rotations:
     - {x: 0, y: 0, z: 0, w: 1}
-    - {x: -0.09720431, y: 0, z: 0, w: 0.9952645}
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     is2D: 1
-    isClosed: 0
+    isClosed: 1
   checkpoints:
-  - foldOut: 0
+  - foldOut: 1
     points:
     - {x: -1, y: 0, z: 0}
     - {x: -0.5, y: 0.5, z: 0}
@@ -468,3 +482,4 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0, w: 1}
     isClosed: 0
     is2D: 1
+  baking: 0

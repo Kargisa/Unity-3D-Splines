@@ -56,13 +56,13 @@ public struct QuadraticBezier : IBezier, IBezierAuto, IFormattable
 
     public readonly float[] EqualDistancePoints(float distance)
     {
-        int resolution;
+        float resolution;
         float fastLength = FastLengthEstimation();
         if (fastLength < 1)
-            resolution = Mathf.CeilToInt(1 / fastLength * ResPerMeter);
+            resolution = 1 / fastLength * ResPerMeter;
         else
-            resolution = Mathf.CeilToInt(fastLength * ResPerMeter);
-        return EqualDistancePoints(distance, resolution);
+            resolution = fastLength * ResPerMeter;
+        return EqualDistancePoints(distance, Mathf.CeilToInt(resolution / distance));
     }
 
     public readonly QuadraticBezier Transform(Matrix4x4 transformation)
