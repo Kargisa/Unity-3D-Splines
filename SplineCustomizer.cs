@@ -12,7 +12,7 @@ public class SplineCustomizer
     public Color anchorColor = Color.red;
     public Color controlColor = Color.gray;
 
-    public Color arrowColor = Color.black;
+    public Color arrowColor = Color.blue;
 
     public float arrowLength = 0.1f;
     public bool alwaysShowArrows = false;

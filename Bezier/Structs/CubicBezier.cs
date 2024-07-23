@@ -13,7 +13,7 @@ public struct CubicBezier : IBezier, IBezierAuto, IFormattable
     public Quaternion r1 { get; set; }
     public Quaternion r2 { get; set; }
     public readonly float Length => GetEstimatedLength();
-    public readonly int ResPerMeter => 75;
+    public readonly int ResPerMeter => 100;
 
 
     public CubicBezier(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4, Quaternion r1, Quaternion r2)
@@ -97,13 +97,13 @@ public struct CubicBezier : IBezier, IBezierAuto, IFormattable
 
     public readonly float[] EqualDistancePoints(float distance)
     {
-        int resolution;
+        float resolution;
         float fastLength = FastLengthEstimation();
         if (fastLength < 1)
-            resolution = Mathf.CeilToInt(1 / fastLength * ResPerMeter);
+            resolution = 1 / fastLength * ResPerMeter;
         else
-            resolution = Mathf.CeilToInt(fastLength * ResPerMeter);
-        return EqualDistancePoints(distance, resolution);
+            resolution = fastLength * ResPerMeter;
+        return EqualDistancePoints(distance, Mathf.CeilToInt(resolution / distance));
     }
 
     public readonly CubicBezier Transform(Matrix4x4 transformation)
