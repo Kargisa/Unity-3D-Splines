@@ -244,7 +244,7 @@ public class SplineEditor : Editor
         for (int i = 0; i < _spline.Path.NumPoints; i++)
         {
             Vector3 oldPos = _spline.Path[i];
-            Vector3 pos = EditorGUILayout.Vector3Field($"{(i % 3 == 0 ? $"Anchor {i / 3}" : $"Con {i}")}", _spline.Path[i]);
+            Vector3 pos = EditorGUILayout.Vector3Field($"{(i % 3 == 0 ? $"Anchor {i / 3 + 1}" : $"Con {i - i / 3}")}", _spline.Path[i]);
             if (pos != oldPos)
             {
                 _spline.Path.MovePoint(i, pos);
@@ -614,7 +614,11 @@ public class SplineEditor : Editor
                 continue;
 
             if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
+            {
                 _spline.RecalculateArrowBuffer();
+                SceneView.RepaintAll();
+            }
+
             Undo.RecordObject(_spline, "Move Point Scene");
             _spline.Path.MovePoint(i, _spline.transform.InverseTransformPoint(newPos));
 

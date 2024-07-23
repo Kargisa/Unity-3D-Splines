@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 
 public class SplineController : MonoBehaviour
@@ -63,7 +66,6 @@ public class SplineController : MonoBehaviour
             _length = GetLength();
         }
 
-        Debug.Log("HI");
         /*
          * Resolutions per meter
          * 
@@ -214,7 +216,7 @@ public class SplineController : MonoBehaviour
     {
         Path.Points.Clear();
         Path.Points.AddRange(checkpoints[i].points);
-        
+
         Path.Rotations.Clear();
         Path.Rotations.AddRange(checkpoints[i].rotations);
 
@@ -225,16 +227,48 @@ public class SplineController : MonoBehaviour
     public override string ToString() => $"path: {Path}";
 
 #if UNITY_EDITOR
+
+    private readonly object _bufferLock = new();
+
+    private readonly List<CancellationTokenSource> _tokenSources = new();
+
     /// <summary>
     /// Editor method
     /// </summary>
     public void RecalculateArrowBuffer()
     {
-        bufferedArrowDistribution.Clear();
-        for (int i = 0; i < Path.NumSegments; i++)
+        CancellationTokenSource source = new();
+        CancellationToken token = source.Token;
+        _tokenSources.Add(source);
+
+        var task = Task.Factory.StartNew((state) =>
         {
-            bufferedArrowDistribution.Add(Path.GetBezierOfSegment(i).Transform(transform.localToWorldMatrix).EqualDistancePoints(custom.arrowDistance));
-        }
+            Matrix4x4 matrix = (Matrix4x4)state;
+
+            if (token.IsCancellationRequested) return;
+            lock (_bufferLock)
+            {
+                if (token.IsCancellationRequested) return;
+                List<float[]> current = new();
+
+                foreach (var tSource in _tokenSources)
+                {
+                    if (tSource.Token == token)
+                        continue;
+                    tSource.Cancel();
+                }
+                _tokenSources.Clear();
+
+                for (int i = 0; i < Path.NumSegments; i++)
+                {
+                    if (token.IsCancellationRequested) return;
+                    current.Add(Path.GetBezierOfSegment(i).Transform(matrix).EqualDistancePoints(custom.arrowDistance));
+                }
+
+                if (token.IsCancellationRequested) return;
+                bufferedArrowDistribution = current;
+            }
+        }, transform.localToWorldMatrix, source.Token);
     }
 
 #endif
