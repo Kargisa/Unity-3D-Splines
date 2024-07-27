@@ -3,8 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.InputSystem.UI;
+
+
+#if UNITY_EDITOR
+using UnityEditor.SceneManagement;
+#endif
 
 public class SplineController : MonoBehaviour
 {
@@ -43,11 +48,32 @@ public class SplineController : MonoBehaviour
     [SerializeField, HideInInspector]
     private Path path;
 
-    public Path Path { get => path; }
+    public Path Path => path;
 
+    [SerializeField, HideInInspector]
     private float _length;
 
     public float Length => GetLength();
+
+    public Matrix4x4 localWorldMatrix
+    {
+        get
+        {
+            Matrix4x4 matrix = new();
+            matrix.SetTRS(transform.position, transform.rotation, Vector3.one);
+            return matrix;
+        }
+    }
+
+    public Matrix4x4 worldLocalMatrix
+    {
+        get
+        {
+            Matrix4x4 matrix = new();
+            matrix.SetTRS(transform.position, transform.worldToLocalMatrix.rotation, Vector3.one);
+            return matrix;
+        }
+    }
 
     /// <summary>
     /// All checkpoints created on the path
@@ -123,7 +149,7 @@ public class SplineController : MonoBehaviour
     /// </summary>
     /// <param name="t">progress clamped between <c>[0 and NumSegments]</c></param>
     /// <returns>Position on the spline [world space]</returns>
-    public Vector3 GetPositionWorld(float t) => transform.TransformPoint(GetPosition(t));
+    public Vector3 GetPositionWorld(float t) => TransformPoint(GetPosition(t));
 
     /// <summary>
     /// Calculates the Rotation on the spline <b>in local space</b> at the given progress <c>t</c>
@@ -154,11 +180,29 @@ public class SplineController : MonoBehaviour
     /// <returns>the length of the spline</returns>
     public float GetLength(int resolution) => Path.GetLength(resolution);
 
+#if UNITY_EDITOR
     /// <summary>
     /// Automatically calculates the length of the spline
     /// </summary> 
     /// <returns>Length of the spline in <c>meters</c></returns>
-    public float GetLength() => IsStatic ? _length : path.GetLength();
+    public float GetLength() => IsStatic && Application.isPlaying ? _length : Path.GetLength();
+#else
+    /// <summary>
+    /// Automatically calculates the length of the spline
+    /// </summary> 
+    /// <returns>Length of the spline in <c>meters</c></returns>
+    public float GetLength() => IsStatic ? _length : Path.GetLength();
+#endif
+
+    public Vector3 TransformPoint(Vector3 point)
+    {
+        return localWorldMatrix.MultiplyPoint(point);
+    }
+
+    public Vector3 InvTransformPoint(Vector3 point)
+    {
+        return worldLocalMatrix.MultiplyPoint(point);
+    }
 
     /// <summary>
     /// Creates a new checkpoint with the current values
@@ -238,10 +282,9 @@ public class SplineController : MonoBehaviour
         CancellationTokenSource source = new();
         CancellationToken token = source.Token;
 
+        Matrix4x4 matrix = localWorldMatrix;
         var task = Task.Factory.StartNew((state) =>
         {
-            Matrix4x4 matrix = (Matrix4x4)state;
-
             foreach (var tSource in _tokenSources)
             {
                 if (tSource.Token == token)
@@ -267,35 +310,54 @@ public class SplineController : MonoBehaviour
                 if (token.IsCancellationRequested) return;
                 bufferedArrowDistribution = current;
             }
-        }, transform.localToWorldMatrix, source.Token);
+        }, source.Token);
     }
 
+    /// <summary>
+    /// Editor fieldh
+    /// </summary>
     [HideInInspector]
     public bool baking = false;
 
     private readonly object _bakeLock = new();
 
-    public void BakeLength()
+    private void BakeLength()
     {
-        if (!IsStatic || baking) return;
+        if (!IsStatic) return;
         baking = true;
 
-        Task.Run(() =>
+        Matrix4x4 lTwM = localWorldMatrix;
+        Task.Factory.StartNew((state) =>
         {
-            lock (_bakeLock)
+            try
             {
-                int[] reses = new int[Path.NumSegments];
-                for (int i = 0; i < Path.NumSegments; i++)
+                Path path = (Path)state;
+                int numSegs = path.NumSegments;
+                int[] reses = new int[numSegs];
+                for (int i = 0; i < numSegs; i++)
                 {
-                    reses[i] = Mathf.CeilToInt(Path.GetBezierOfSegment(i).Length) * 1000;
+                    reses[i] = Mathf.CeilToInt(path.GetBezierOfSegment(i).Length) * 10000;
                 }
 
-                _length = Path.GetLength(reses);
-                Debug.Log($"Baking finished with a length of {_length} units!");
+                lock (_bakeLock)
+                {
+                    _length = path.GetLength(reses);
+                }
+
                 baking = false;
+                Debug.Log($"Baking finished with a length of {_length} units!");
             }
-        });
+            catch (Exception)
+            {
+                baking = false;
+                Debug.LogError("Baking failed");
+            }
+        }, Path);
     }
 
+    public void EditorSceneManager_sceneSaving(UnityEngine.SceneManagement.Scene scene, string path)
+    {
+        BakeLength();
+    }
 #endif
 }

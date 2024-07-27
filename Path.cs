@@ -288,6 +288,19 @@ public class Path
         return length;
     }
 
+    /// <returns>Length of the path</returns>
+    public float GetLength(Matrix4x4 transform)
+    {
+        float length = 0;
+        for (int i = 0; i < NumSegments; i++)
+        {
+            CubicBezier b = GetBezierOfSegment(i).Transform(transform);
+            length += b.Length;
+        }
+
+        return length;
+    }
+
     /// <summary>
     /// Gets the length of the path with a custom resolution
     /// </summary>
@@ -308,11 +321,30 @@ public class Path
     }
 
     /// <summary>
+    /// Gets the length of the path with a custom resolution
+    /// </summary>
+    /// <param name="resolutions">resolutions for the beziers</param>
+    /// <returns>length of the spline</returns>
+    public float GetLength(Matrix4x4 transform, params int[] resolutions)
+    {
+        if (resolutions.Length != NumSegments)
+            throw new System.ArgumentException("resolutions must have the same length as the number of segments in the spline");
+
+        float length = 0;
+        for (int i = 0; i < NumSegments; i++)
+        {
+            CubicBezier b = GetBezierOfSegment(i).Transform(transform);
+            length += b.GetEstimatedLength(resolutions[i]);
+        }
+        return length;
+    }
+
+    /// <summary>
     /// Calculates a transformation for the path
     /// </summary>
     /// <param name="transformation">The tarnsformation matrix</param>
     /// <returns>Information about the transformed path</returns>
-    public PathInfo Transform(Matrix4x4 transformation)
+    public PathInfo TransformInfo(Matrix4x4 transformation)
     {
         Vector3[] points = new Vector3[NumPoints];
         Quaternion[] rotations = new Quaternion[NumRotations];

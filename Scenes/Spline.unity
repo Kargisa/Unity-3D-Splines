@@ -327,7 +327,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 821899420}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.424, y: 0.955, z: -1.35}
+  m_LocalPosition: {x: -2.4, y: 0.955, z: -1.59}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -403,7 +403,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1229239434}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.24, z: 5.4}
+  m_LocalPosition: {x: -1.06, y: -0.24, z: 5.4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -424,7 +424,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathFoldOut: 0
   rotationsFoldOut: 0
-  infoFoldOut: 1
+  infoFoldOut: 0
   checkpointsFoldOut: 1
   isRotate: 0
   custom:
@@ -437,30 +437,30 @@ MonoBehaviour:
     arrowLength: 0.1
     alwaysShowArrows: 1
     useArrowDistanceDistribution: 1
-    arrowDistribution: 40
-    arrowDistance: 0.1
-  customizerFoldOut: 0
+    arrowDistribution: 250
+    arrowDistance: 0.2
+  customizerFoldOut: 1
   isStatic: 1
   path:
     points:
-    - {x: -97.57063, y: 11.9421625, z: 0}
-    - {x: -28.282452, y: 27.411911, z: 0}
+    - {x: -93.2, y: 11.9421625, z: 0}
+    - {x: -23.911816, y: 27.411911, z: 0}
     - {x: -46.933693, y: -9.806814, z: 0}
     - {x: -1.6861492, y: -9.55684, z: 0}
     - {x: 43.561394, y: -9.306866, z: 0}
-    - {x: 1.1478295, y: 13.865106, z: 0}
-    - {x: 6.6510696, y: 14.205374, z: 0}
-    - {x: 12.15431, y: 14.545642, z: 0}
+    - {x: 1.9033022, y: 11.30093, z: 0}
+    - {x: 5.470169, y: 15.30422, z: 0}
+    - {x: 9.03704, y: 19.307514, z: 0}
     - {x: 17.146383, y: 23.524412, z: 0}
     - {x: 33.95627, y: 9.668026, z: 0}
     - {x: 50.76615, y: -4.18836, z: 0}
-    - {x: 75.32563, y: -40.02023, z: 0}
+    - {x: 20.321648, y: -35.816338, z: 0}
     - {x: 6.769454, y: -33.213444, z: 0}
-    - {x: -61.78672, y: -26.406658, z: 0}
+    - {x: -6.7827387, y: -30.610548, z: 0}
     - {x: -55.2359, y: -85.876175, z: 0}
     - {x: -134.23703, y: -51.569897, z: 0}
     - {x: -213.23816, y: -17.263618, z: 0}
-    - {x: -166.85915, y: -3.5276031, z: 0}
+    - {x: -162.48853, y: -3.5276031, z: 0}
     rotations:
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
@@ -470,6 +470,7 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0, w: 1}
     is2D: 1
     isClosed: 1
+  _length: 532.5337
   checkpoints:
   - foldOut: 1
     points:
@@ -482,4 +483,4 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0, w: 1}
     isClosed: 0
     is2D: 1
-  baking: 0
+  baking: 1

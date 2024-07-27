@@ -62,7 +62,7 @@ public struct QuadraticBezier : IBezier, IBezierAuto, IFormattable
             resolution = 1 / fastLength * ResPerMeter;
         else
             resolution = fastLength * ResPerMeter;
-        return EqualDistancePoints(distance, Mathf.CeilToInt(resolution / distance));
+        return EqualDistancePoints(distance, Mathf.CeilToInt(resolution / Mathf.Min(1, distance)));
     }
 
     public readonly QuadraticBezier Transform(Matrix4x4 transformation)
