@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 [CustomEditor(typeof(SplineController))]
@@ -27,6 +28,9 @@ public class SplineEditor : Editor
             _spline.RecalculateArrowBuffer();
 
         Undo.undoRedoPerformed += _spline.RecalculateArrowBuffer;
+
+        EditorSceneManager.sceneSaving -= _spline.EditorSceneManager_sceneSaving;
+        EditorSceneManager.sceneSaving += _spline.EditorSceneManager_sceneSaving;
     }
 
     private void OnDisable()
@@ -40,18 +44,10 @@ public class SplineEditor : Editor
         DrawOpenDocsButton();
 
         _spline.IsStatic = EditorGUILayout.Toggle("Static", _spline.IsStatic);
-        if (_spline.IsStatic)
-        {
-            GUI.enabled = !_spline.baking;
-            if (GUILayout.Button("Bake Length"))
-                _spline.BakeLength();
-            GUI.enabled = true;
-        }
-
-
-        EditorGUILayout.Space();
 
         DrawToggleTo2D();
+
+        EditorGUILayout.Space();
         DrawToggleMoveButton();
         if (_spline.isRotate) DrawRotations(ref _spline.rotationsFoldOut);
         else DrawPath(ref _spline.pathFoldOut);
@@ -385,7 +381,7 @@ public class SplineEditor : Editor
                 _spline.RecalculateArrowBuffer();
         }
         else
-            custom.arrowDistribution = EditorGUILayout.IntSlider("Arrow Distribution", custom.arrowDistribution, 1, 250);
+            custom.arrowDistribution = Mathf.Max(0, EditorGUILayout.IntField("Arrow Distribution", custom.arrowDistribution));
 
         EditorGUI.indentLevel--;
 
@@ -478,7 +474,7 @@ public class SplineEditor : Editor
 
         // INFO: Debug
         // <------------------------------------------>
-        CubicBezier b = _spline.Path.GetBezierOfSegment(0).Transform(_spline.transform.localToWorldMatrix);
+        CubicBezier b = _spline.Path.GetBezierOfSegment(0).Transform(_spline.localWorldMatrix);
         Handles.CircleHandleCap(0, b.GetPoint(0.25f), Quaternion.identity, 0.01f, EventType.Repaint);
         Handles.CircleHandleCap(1, b.GetPoint(0.75f), Quaternion.identity, 0.01f, EventType.Repaint);
         // <------------------------------------------>
@@ -499,10 +495,11 @@ public class SplineEditor : Editor
         {
             float nearestDist = 0.05f;
             int nearestSegment = -1;
+            Transform camTransform = Camera.current.transform;
 
             for (int i = 0; i < _spline.Path.NumSegments; i++)
             {
-                CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix);
+                CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.localWorldMatrix);
 
                 Vector3 p1TOp2 = bezier.p4 - bezier.p1;
                 Vector3 planeNormal = Vector3.Cross(p1TOp2, _spline.transform.up).normalized;
@@ -519,8 +516,7 @@ public class SplineEditor : Editor
                 _mousePosOnPlane = pointOnPlane;
 
                 float dist = HandleUtility.DistancePointBezier(pointOnPlane, bezier.p1, bezier.p4, bezier.p2, bezier.p3);
-
-                if (dist >= nearestDist)
+                if (dist >= Mathf.SmoothStep(nearestDist, 2, Mathf.Clamp(Vector3.Distance(pointOnPlane, camTransform.position), 0f, 50f) / 50f))
                     continue;
 
                 nearestDist = dist;
@@ -538,7 +534,7 @@ public class SplineEditor : Editor
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 0 && guiEvent.control && _selectedSegment != -1 && _spline.Path.Is2D)
         {
             Undo.RecordObject(_spline, "Insert Segment");
-            _spline.Path.InsertSegment(_selectedSegment, _spline.transform.InverseTransformPoint(_mousePosOnPlane));
+            _spline.Path.InsertSegment(_selectedSegment, _spline.InvTransformPoint(_mousePosOnPlane));
 
             if (_spline.custom.alwaysShowArrows && _spline.custom.useArrowDistanceDistribution)
                 _spline.RecalculateArrowBuffer();
@@ -557,6 +553,7 @@ public class SplineEditor : Editor
         // Removes a segment at the mouse position
         if (guiEvent.type == EventType.MouseDown && guiEvent.button == 1 && guiEvent.control)
         {
+            Transform camTransform = Camera.current.transform;
             float distToAnchor = 0.05f;
             int closestAnchorIndex = -1;
             for (int i = 0; i < _spline.Path.NumPoints; i++)
@@ -564,8 +561,10 @@ public class SplineEditor : Editor
                 if (i % 3 != 0)
                     continue;
 
-                float dist = DistFromPoint(r, _spline.transform.TransformPoint(_spline.Path[i]));
-                if (dist < distToAnchor)
+                Vector3 point = _spline.TransformPoint(_spline.Path[i]);
+                float dist = DistFromPoint(r, point);
+
+                if (dist < Mathf.SmoothStep(distToAnchor, 2, Mathf.Clamp(Vector3.Distance(point, camTransform.position), 0f, 50f) / 50f))
                 {
                     distToAnchor = dist;
                     closestAnchorIndex = i;
@@ -590,7 +589,7 @@ public class SplineEditor : Editor
     {
         for (int i = 0; i < _spline.Path.NumSegments; i++)
         {
-            CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.transform.localToWorldMatrix);
+            CubicBezier bezier = _spline.Path.GetBezierOfSegment(i).Transform(_spline.localWorldMatrix);
             if (!isRotate)
             {
                 Handles.color = _spline.custom.connectionColor;
@@ -602,7 +601,7 @@ public class SplineEditor : Editor
 
         }
 
-        PathInfo info = _spline.Path.Transform(_spline.transform.localToWorldMatrix);
+        PathInfo info = _spline.Path.TransformInfo(_spline.localWorldMatrix);
 
         if (isRotate)
             PaintRotation(info);
@@ -630,7 +629,7 @@ public class SplineEditor : Editor
                 _spline.RecalculateArrowBuffer();
 
             Undo.RecordObject(_spline, "Move Point Scene");
-            _spline.Path.MovePoint(i, _spline.transform.InverseTransformPoint(newPos));
+            _spline.Path.MovePoint(i, _spline.InvTransformPoint(newPos));
 
         }
 
@@ -717,4 +716,8 @@ public class SplineEditor : Editor
         return dist;
     }
 
+    private void OnDestroy()
+    {
+        EditorSceneManager.sceneSaving -= _spline.EditorSceneManager_sceneSaving;
+    }
 }
