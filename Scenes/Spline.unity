@@ -438,7 +438,7 @@ MonoBehaviour:
     alwaysShowArrows: 1
     useArrowDistanceDistribution: 1
     arrowDistribution: 250
-    arrowDistance: 0.2
+    arrowDistance: 0.1
   customizerFoldOut: 1
   isStatic: 1
   path:
@@ -448,6 +448,9 @@ MonoBehaviour:
     - {x: -46.933693, y: -9.806814, z: 0}
     - {x: -1.6861492, y: -9.55684, z: 0}
     - {x: 43.561394, y: -9.306866, z: 0}
+    - {x: 11.734871, y: 7.9670343, z: 0.0000014305115}
+    - {x: 11.734871, y: 7.9670343, z: 0.0000014305115}
+    - {x: 11.734871, y: 7.9670343, z: 0.0000014305115}
     - {x: 1.9033022, y: 11.30093, z: 0}
     - {x: 5.470169, y: 15.30422, z: 0}
     - {x: 9.03704, y: 19.307514, z: 0}
@@ -468,9 +471,10 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
     - {x: 0, y: 0, z: 0, w: 1}
+    - {x: 0, y: 0, z: 0, w: 1}
     is2D: 1
     isClosed: 1
-  _length: 532.5337
+  _length: 532.538
   checkpoints:
   - foldOut: 1
     points:

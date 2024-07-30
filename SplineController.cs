@@ -70,7 +70,8 @@ public class SplineController : MonoBehaviour
         get
         {
             Matrix4x4 matrix = new();
-            matrix.SetTRS(transform.position, transform.worldToLocalMatrix.rotation, Vector3.one);
+            var localMatrix = transform.worldToLocalMatrix;
+            matrix.SetTRS(localMatrix.GetPosition(), localMatrix.rotation, Vector3.one);
             return matrix;
         }
     }
@@ -282,7 +283,6 @@ public class SplineController : MonoBehaviour
         CancellationTokenSource source = new();
         CancellationToken token = source.Token;
 
-        Matrix4x4 matrix = localWorldMatrix;
         var task = Task.Factory.StartNew((state) =>
         {
             foreach (var tSource in _tokenSources)
@@ -304,7 +304,7 @@ public class SplineController : MonoBehaviour
                 for (int i = 0; i < Path.NumSegments; i++)
                 {
                     if (token.IsCancellationRequested) return;
-                    current.Add(Path.GetBezierOfSegment(i).Transform(matrix).EqualDistancePoints(custom.arrowDistance));
+                    current.Add(Path.GetBezierOfSegment(i).EqualDistancePoints(custom.arrowDistance));
                 }
 
                 if (token.IsCancellationRequested) return;
@@ -326,7 +326,6 @@ public class SplineController : MonoBehaviour
         if (!IsStatic) return;
         baking = true;
 
-        Matrix4x4 lTwM = localWorldMatrix;
         Task.Factory.StartNew((state) =>
         {
             try
